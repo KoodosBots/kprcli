@@ -1,0 +1,19 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY TeleKprV2/package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy bot source
+COPY TeleKprV2/ .
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "console.log('Bot health check')" || exit 1
+
+# Start the bot
+CMD ["node", "enhanced-bot.js"]

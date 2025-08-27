@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleKpr Admin Dashboard - Full Featured</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <style>
+        /* Modern Admin Dashboard CSS */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --brand-primary: #007bff;
+            --brand-success: #28a745;
+            --brand-danger: #dc3545;
+            --brand-warning: #ffc107;
+            --brand-info: #17a2b8;
+            --shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--brand-primary);
+            color: white;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .nav-item.active {
+            background-color: var(--brand-primary);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--bg-primary);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Tables */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .table th {
+            background-color: var(--bg-secondary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0.125rem;
+        }
+
+        .btn-primary {
+            background-color: var(--brand-primary);
+            border-color: var(--brand-primary);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--brand-success);
+            border-color: var(--brand-success);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--brand-danger);
+            border-color: var(--brand-danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--brand-warning);
+            border-color: var(--brand-warning);
+            color: black;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Status Messages */
+        .alert {
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.375rem;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .alert-info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        /* Hidden */
+        .d-none {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                top: 0;
+                left: -100%;
+                z-index: 1000;
+                transition: left 0.3s;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h4>🚀 TeleKpr Admin</h4>
+                <small>Full Featured Dashboard</small>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" onclick="showSection('dashboard')">
+                    📊 Dashboard
+                </button>
+                <button class="nav-item" onclick="showSection('customers')">
+                    👥 Customers
+                </button>
+                <button class="nav-item" onclick="showSection('orders')">
+                    📦 Orders
+                </button>
+                <button class="nav-item" onclick="showSection('users')">
+                    👤 Users
+                </button>
+                <button class="nav-item" onclick="showSection('subscriptions')">
+                    💳 Subscriptions
+                </button>
+                <button class="nav-item" onclick="showSection('settings')">
+                    ⚙️ Settings
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h2 id="page-title">Dashboard</h2>
+                <div id="status-messages"></div>
+            </div>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-customers">-</div>
+                            <div class="stat-label">Total Customers</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-orders">-</div>
+                            <div class="stat-label">Total Orders</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-users">-</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-subscriptions">-</div>
+                            <div class="stat-label">Active Subscriptions</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            📈 Quick Actions
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-primary" onclick="showSection('customers')">
+                                👥 Manage Customers
+                            </button>
+                            <button class="btn btn-success" onclick="showSection('orders')">
+                                📦 View Orders
+                            </button>
+                            <button class="btn btn-info" onclick="refreshStats()">
+                                🔄 Refresh Stats
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customers Section -->
+                <div id="customers-section" class="d-none">
+                    <div class="card">
+                        <div class="card-header">
+                            👥 Customer Management
+                            <button class="btn btn-primary" onclick="loadCustomers()">
+                                🔄 Refresh
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="customers-content">
+                                <div class="loading">Loading customers...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Section -->
+                <div id="orders-section" class="d-none">
+                    <div class="card">
+                        <div class="card-header">
+                            📦 Order Management
+                            <button class="btn btn-primary" onclick="loadOrders()">
+                                🔄 Refresh
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="orders-content">
+                                <div class="loading">Loading orders...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Section -->
+                <div id="users-section" class="d-none">
+                    <div class="card">
+                        <div class="card-header">
+                            👤 User Management
+                            <button class="btn btn-primary" onclick="loadUsers()">
+                                🔄 Refresh
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="users-content">
+                                <div class="loading">Loading users...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscriptions Section -->
+                <div id="subscriptions-section" class="d-none">
+                    <div class="card">
+                        <div class="card-header">
+                            💳 Subscription Management
+                            <button class="btn btn-primary" onclick="loadSubscriptions()">
+                                🔄 Refresh
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="subscriptions-content">
+                                <div class="loading">Loading subscriptions...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="settings-section" class="d-none">
+                    <div class="card">
+                        <div class="card-header">
+                            ⚙️ System Settings
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <strong>API Server Status:</strong> <span id="api-status">Checking...</span>
+                            </div>
+                            <button class="btn btn-primary" onclick="testAPI()">
+                                🧪 Test API Connection
+                            </button>
+                            <button class="btn btn-warning" onclick="clearCache()">
+                                🗑️ Clear Cache
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8090'; // Change to your server URL
+        
+        // Initialize Supabase for basic operations (using anon key for reading)
+        // Replace with your actual Supabase credentials
+        const supabase = window.supabase.createClient(
+            'https://your-project-id.supabase.co',
+            'your_supabase_anon_key_here'
+        );
+
+        // Show status message
+        function showMessage(message, type = 'success') {
+            const container = document.getElementById('status-messages');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            container.appendChild(alert);
+            
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Show section
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('[id$="-section"]').forEach(section => {
+                section.classList.add('d-none');
+            });
+            
+            // Remove active class from nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(`${sectionName}-section`).classList.remove('d-none');
+            
+            // Update page title
+            const titles = {
+                dashboard: 'Dashboard',
+                customers: 'Customer Management',
+                orders: 'Order Management', 
+                users: 'User Management',
+                subscriptions: 'Subscription Management',
+                settings: 'System Settings'
+            };
+            document.getElementById('page-title').textContent = titles[sectionName];
+            
+            // Set active nav item
+            event.target.classList.add('active');
+            
+            // Load section data
+            switch(sectionName) {
+                case 'dashboard':
+                    refreshStats();
+                    break;
+                case 'customers':
+                    loadCustomers();
+                    break;
+                case 'orders':
+                    loadOrders();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'subscriptions':
+                    loadSubscriptions();
+                    break;
+                case 'settings':
+                    testAPI();
+                    break;
+            }
+        }
+
+        // Test API connection
+        async function testAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/api/test`);
+                const data = await response.json();
+                
+                document.getElementById('api-status').innerHTML = 
+                    `<span style="color: green;">✅ Connected</span> - ${data.message}`;
+                    
+                showMessage('API connection successful', 'success');
+            } catch (error) {
+                document.getElementById('api-status').innerHTML = 
+                    `<span style="color: red;">❌ Failed</span> - ${error.message}`;
+                    
+                showMessage('API connection failed: ' + error.message, 'danger');
+            }
+        }
+
+        // Refresh dashboard stats
+        async function refreshStats() {
+            try {
+                showMessage('Refreshing statistics...', 'info');
+                
+                // Get customers count
+                const customersResponse = await fetch(`${API_BASE}/api/customers`);
+                const customers = await customersResponse.json();
+                document.getElementById('total-customers').textContent = 
+                    Array.isArray(customers) ? customers.length : '0';
+
+                // Get other stats from Supabase
+                const { data: orders } = await supabase.from('orders').select('id', { count: 'exact' });
+                const { data: users } = await supabase.from('users').select('id', { count: 'exact' });
+                const { data: subscriptions } = await supabase
+                    .from('subscriptions')
+                    .select('id', { count: 'exact' })
+                    .eq('status', 'active');
+
+                document.getElementById('total-orders').textContent = orders?.length || '0';
+                document.getElementById('total-users').textContent = users?.length || '0';
+                document.getElementById('total-subscriptions').textContent = subscriptions?.length || '0';
+                
+                showMessage('Statistics updated', 'success');
+            } catch (error) {
+                showMessage('Failed to refresh stats: ' + error.message, 'danger');
+            }
+        }
+
+        // Load customers using working API
+        async function loadCustomers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/customers`);
+                const customers = await response.json();
+                
+                if (customers.error) {
+                    throw new Error(customers.error);
+                }
+                
+                let html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Gender</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                if (customers.length === 0) {
+                    html += '<tr><td colspan="6" class="text-center">No customers found</td></tr>';
+                } else {
+                    customers.forEach(customer => {
+                        const created = new Date(customer.created_at).toLocaleDateString();
+                        html += `
+                            <tr>
+                                <td><strong>${customer.full_name || 'N/A'}</strong></td>
+                                <td>${customer.phone_number || 'N/A'}</td>
+                                <td>${customer.email || 'N/A'}</td>
+                                <td>${customer.gender || 'N/A'}</td>
+                                <td>${created}</td>
+                                <td>
+                                    <button class="btn btn-danger" onclick="deleteCustomer('${customer.id}', '${customer.full_name || 'Unknown'}')">
+                                        🗑️ Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                html += '</tbody></table>';
+                document.getElementById('customers-content').innerHTML = html;
+                
+                showMessage(`Loaded ${customers.length} customers`, 'success');
+            } catch (error) {
+                document.getElementById('customers-content').innerHTML = 
+                    '<div class="alert alert-danger">Failed to load customers: ' + error.message + '</div>';
+                showMessage('Failed to load customers: ' + error.message, 'danger');
+            }
+        }
+
+        // Delete customer using working API
+        async function deleteCustomer(customerId, customerName) {
+            if (!confirm(`⚠️ Are you sure you want to delete customer "${customerName}"?\n\nThis action cannot be undone!`)) {
+                return;
+            }
+            
+            try {
+                showMessage(`Deleting customer: ${customerName}...`, 'info');
+                
+                const response = await fetch(`${API_BASE}/api/customers/${customerId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success !== false) {
+                    showMessage(`Customer "${customerName}" deleted successfully!`, 'success');
+                    // Refresh the customer list
+                    setTimeout(() => loadCustomers(), 1000);
+                } else {
+                    showMessage(`Deletion completed with warnings: ${result.error || result.message}`, 'warning');
+                    setTimeout(() => loadCustomers(), 1000);
+                }
+                
+            } catch (error) {
+                showMessage(`Deletion failed: ${error.message}`, 'danger');
+            }
+        }
+
+        // Load orders
+        async function loadOrders() {
+            try {
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select(`
+                        *,
+                        customer_profiles(full_name, phone_number),
+                        users(telegram_username, full_name)
+                    `)
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                let html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Package</th>
+                                <th>Status</th>
+                                <th>Tokens</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                if (!orders || orders.length === 0) {
+                    html += '<tr><td colspan="6" class="text-center">No orders found</td></tr>';
+                } else {
+                    orders.forEach(order => {
+                        const created = new Date(order.created_at).toLocaleDateString();
+                        const customer = order.customer_profiles?.full_name || 'Unknown';
+                        const statusClass = {
+                            'pending': 'warning',
+                            'processing': 'info', 
+                            'completed': 'success',
+                            'cancelled': 'danger'
+                        }[order.status] || 'secondary';
+
+                        html += `
+                            <tr>
+                                <td><code>${order.id.substring(0, 8)}</code></td>
+                                <td>${customer}</td>
+                                <td>${order.package_type || 'Standard'}</td>
+                                <td><span class="badge badge-${statusClass}">${order.status}</span></td>
+                                <td>${order.token_cost || 0}</td>
+                                <td>${created}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                html += '</tbody></table>';
+                document.getElementById('orders-content').innerHTML = html;
+                
+                showMessage(`Loaded ${orders?.length || 0} orders`, 'success');
+            } catch (error) {
+                document.getElementById('orders-content').innerHTML = 
+                    '<div class="alert alert-danger">Failed to load orders: ' + error.message + '</div>';
+                showMessage('Failed to load orders: ' + error.message, 'danger');
+            }
+        }
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const { data: users, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                let html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Telegram</th>
+                                <th>Tokens</th>
+                                <th>Admin</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                if (!users || users.length === 0) {
+                    html += '<tr><td colspan="5" class="text-center">No users found</td></tr>';
+                } else {
+                    users.forEach(user => {
+                        const created = new Date(user.created_at).toLocaleDateString();
+                        const adminBadge = user.is_admin ? 
+                            '<span style="color: red;">✅ Admin</span>' : 
+                            '<span style="color: gray;">👤 User</span>';
+
+                        html += `
+                            <tr>
+                                <td><strong>${user.full_name || 'N/A'}</strong></td>
+                                <td>@${user.telegram_username || 'N/A'}</td>
+                                <td>${user.token_balance || 0}</td>
+                                <td>${adminBadge}</td>
+                                <td>${created}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                html += '</tbody></table>';
+                document.getElementById('users-content').innerHTML = html;
+                
+                showMessage(`Loaded ${users?.length || 0} users`, 'success');
+            } catch (error) {
+                document.getElementById('users-content').innerHTML = 
+                    '<div class="alert alert-danger">Failed to load users: ' + error.message + '</div>';
+                showMessage('Failed to load users: ' + error.message, 'danger');
+            }
+        }
+
+        // Load subscriptions
+        async function loadSubscriptions() {
+            try {
+                const { data: subscriptions, error } = await supabase
+                    .from('subscriptions')
+                    .select(`
+                        *,
+                        users(telegram_username, full_name)
+                    `)
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                let html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Plan</th>
+                                <th>Status</th>
+                                <th>Expires</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                if (!subscriptions || subscriptions.length === 0) {
+                    html += '<tr><td colspan="5" class="text-center">No subscriptions found</td></tr>';
+                } else {
+                    subscriptions.forEach(sub => {
+                        const created = new Date(sub.created_at).toLocaleDateString();
+                        const expires = new Date(sub.expires_at).toLocaleDateString();
+                        const user = sub.users?.full_name || sub.users?.telegram_username || 'Unknown';
+                        const statusClass = sub.status === 'active' ? 'success' : 'danger';
+
+                        html += `
+                            <tr>
+                                <td><strong>${user}</strong></td>
+                                <td>${sub.plan_type || 'N/A'}</td>
+                                <td><span class="badge badge-${statusClass}">${sub.status}</span></td>
+                                <td>${expires}</td>
+                                <td>${created}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                html += '</tbody></table>';
+                document.getElementById('subscriptions-content').innerHTML = html;
+                
+                showMessage(`Loaded ${subscriptions?.length || 0} subscriptions`, 'success');
+            } catch (error) {
+                document.getElementById('subscriptions-content').innerHTML = 
+                    '<div class="alert alert-danger">Failed to load subscriptions: ' + error.message + '</div>';
+                showMessage('Failed to load subscriptions: ' + error.message, 'danger');
+            }
+        }
+
+        // Clear cache
+        function clearCache() {
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                showMessage('Cache cleared successfully', 'success');
+            } catch (error) {
+                showMessage('Failed to clear cache: ' + error.message, 'danger');
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Full Featured Admin Panel Loaded!');
+            testAPI();
+            refreshStats();
+        });
+    </script>
+</body>
+</html>

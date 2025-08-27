@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git clone:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install)",
+      "Bash(taskkill:*)",
+      "Bash(npx convex dev:*)",
+      "WebSearch",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx supabase:*)",
+      "Bash(chmod:*)",
+      "Bash(del libauth-bridge.ts)",
+      "Bash(timeout 180 docker-compose -f docker-compose.simple.yml build kprcli-web)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,64 @@
+. Pricing Model: 
+
+    solo plan 
+        1pcs usages
+        10 profile executions per day (no limit to the number of autofill rules in a profile)
+
+    pair plan
+        2pcs usages
+        30 profile executions per day (no limit to the number of autofill rules in a profile)
+        Unlimited profile executions
+        Cloud sync(google intergration)
+
+    squad plan
+        3pcs usages
+        60 profile executions per day (no limit to the number of autofill rules in a profile)
+        Unlimited profile executions
+        Cloud sync (google intergration)
+        JavaScript rules and variables
+        self improvement ai
+	    AI Training
+        telegram bot
+
+When you add API keys
+
+        reCAPTCHA autofill
+	AI Training
+	self improvement
+
+
+
+     > Timeline and MVP Scope: The 3-week implementation roadmap is very ambitious. Is this timeline        │
+│   intended                                                                                             │
+│         for a proof-of-concept (PoC), or is the initial MVP for the public launch a smaller            │
+│   subset of the                                                                                        │
+│         features detailed in this document? will  be done in two days claude code and gpt 5
+
+
+Core Architecture: The product includes a browser extension, a CLI, and remote control capabilities.
+      How do you envision these components interacting? Will they be independent, or will they communicate
+      with a central backend service for managing profiles, form templates, and remote commands?
+
+ the telegram bot interacts with the extension then the extension to the cli client
+
+AI's Specific Role: Could you elaborate on the "AI learning" process? Is the AI's primary role to
+      intelligently map descriptive labels (e.g., "First Name") to their corresponding HTML form fields, or
+      is it expected to handle more complex logic, like navigating multi-step forms and understanding
+      conditional field visibility?
+
+      yes and scrape the url that the form is on or navigating to the sign up form studys the code to fill out the form to score 100
+      if the form doesnt get 100% the form errors are logged and is ordered by anthoer agent to self improvement but ai learning is going off filling out forms and learning 
+
+
+       Client Data Storage: Since client profiles must be accessible by both the browser extension and the
+      CLI, what is the proposed storage mechanism? Will it be a local database file (e.g., SQLite) on the
+      user's machine, or is the cloud sync feature a mandatory component from the start?
+
+      user data will be stored on their pc but the account created and device information is saved on my supabase 
+
+      Technology Stack Preference: The document mentions Playwright for automation and suggests either
+      Node.js or Python for the CLI. Is there a preferred technology for the CLI and any potential backend
+      services? Choosing this early could help in creating a more unified codebase.
+
+the foundation
+https://github.com/build-with-groq/groq-code-cli

@@ -1,0 +1,343 @@
+version: '3.8'
+
+services:
+  # Elite Next.js Frontend - User Interface
+  kprcli-web:
+    build:
+      context: ./elite-starter
+      dockerfile: Dockerfile
+    container_name: kprcli-web
+    ports:
+      - "3000:3000"  # Auto-detection will be handled by installation script
+    environment:
+      - NODE_ENV=production
+      # Clerk Authentication
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - NEXT_PUBLIC_CLERK_FRONTEND_API_URL=${NEXT_PUBLIC_CLERK_FRONTEND_API_URL}
+      - CLERK_WEBHOOK_SECRET=${CLERK_WEBHOOK_SECRET}
+      # Supabase Database
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      # Redis Cache
+      - REDIS_URL=redis://redis:6379
+      # Telegram Bot
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      # JWT Security
+      - JWT_SECRET=${JWT_SECRET}
+      # App Configuration
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      # Clerk Routes
+      - NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+      - NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+      - NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
+      - NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
+      # Service URLs
+      - KPRCLI_API_URL=http://kprcli-api:8000
+      - TELEGRAM_BOT_URL=http://kprcli-telegram:3002
+      # Feature Flags
+      - NEXT_PUBLIC_AI_AUTOMATION_ENABLED=true
+      - NEXT_PUBLIC_TELEGRAM_BOT_ENABLED=true
+      - NEXT_PUBLIC_FORM_TRAINING_ENABLED=true
+      - NEXT_PUBLIC_MULTI_LLM_ENABLED=true
+      - NEXT_PUBLIC_GROQ_ENABLED=true
+      - NEXT_PUBLIC_OPENROUTER_ENABLED=true
+      - NEXT_PUBLIC_OLLAMA_ENABLED=true
+    volumes:
+      - ./elite-starter:/app
+      - /app/node_modules
+    depends_on:
+      - redis
+      - kprcli-api
+      - kprcli-telegram
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Enhanced FastAPI Backend - Core API Services
+  kprcli-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: kprcli-api
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+      - MITMPROXY_ENABLED=true
+      - AI_FORM_AUTOMATION_ENABLED=true
+    volumes:
+      - ./api:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - playwright_cache:/ms-playwright
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Enhanced Telegram Bot - Admin Control & User Interface
+  kprcli-telegram:
+    build:
+      context: ./TeleKprV2
+      dockerfile: Dockerfile.telegram
+    container_name: kprcli-telegram
+    ports:
+      - "3002:3002"  # Internal port for bot API
+    environment:
+      - NODE_ENV=production
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - BOT_USERNAME=${BOT_USERNAME}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - OXAPAY_API_KEY=${OXAPAY_API_KEY}
+      - OXAPAY_MERCHANT=${OXAPAY_MERCHANT}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - ADMIN_CONTROL_ENABLED=true
+      - KPRCLI_API_URL=http://kprcli-api:8000
+      - CLERK_WEBHOOK_SECRET=${CLERK_WEBHOOK_SECRET}
+    volumes:
+      - ./TeleKprV2:/app
+      - ./logs:/app/logs
+      - telegram_data:/app/data
+    depends_on:
+      - kprcli-api
+      - redis
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Enhanced Admin Panel - Administrative Interface
+  kprcli-admin:
+    build:
+      context: ./TeleKprV2
+      dockerfile: Dockerfile.admin
+    container_name: kprcli-admin
+    ports:
+      - "8082:8082"  # Internal admin port
+    environment:
+      - NODE_ENV=production
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - SYSTEM_MONITORING_ENABLED=true
+      - REMOTE_CONTROL_ENABLED=true
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+    volumes:
+      - ./TeleKprV2:/app
+      - ./logs:/app/logs
+      - admin_data:/app/data
+    depends_on:
+      - kprcli-api
+      - kprcli-telegram
+      - redis
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Automation Engine - Form Processing & ML
+  kprcli-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    container_name: kprcli-ai
+    environment:
+      - NODE_ENV=production
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+      - MITMPROXY_ENABLED=true
+      - AI_MODELS_ENABLED=groq,openrouter,ollama
+      - FORM_AUTOMATION_ENABLED=true
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}
+      - BRIGHT_DATA_API_KEY=${BRIGHT_DATA_API_KEY}
+    volumes:
+      - ./ai-engine:/app
+      - ./data/patterns:/app/patterns
+      - ./data/training:/app/training
+      - ./logs:/app/logs
+      - playwright_cache:/ms-playwright
+      - ai_models:/app/models
+    depends_on:
+      - kprcli-api
+      - redis
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+  # Admin Communication Channel - Remote Control
+  kprcli-admin-channel:
+    build:
+      context: ./admin-channel
+      dockerfile: Dockerfile
+    container_name: kprcli-admin-channel
+    environment:
+      - NODE_ENV=production
+      - ADMIN_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - USER_INSTALLATION_ID=${USER_INSTALLATION_ID}
+      - ADMIN_CONTROL_ENDPOINT=${ADMIN_CONTROL_ENDPOINT}
+      - ENCRYPTION_KEY=${ADMIN_CHANNEL_ENCRYPTION_KEY}
+      - WEBSOCKET_URL=${ADMIN_WEBSOCKET_URL}
+      - SYSTEM_CONTROL_ENABLED=true
+      - DOCKER_SOCKET_ENABLED=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker control access
+      - ./:/app/user-data:ro                        # Read-only user data access
+      - ./logs:/app/logs
+      - admin_channel_data:/app/data
+    depends_on:
+      - kprcli-telegram
+      - redis
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    privileged: true  # Required for Docker socket access
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis - Message Queue & Caching
+  redis:
+    image: redis:7-alpine
+    container_name: kprcli-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL - Local Database (Optional - if not using Supabase)
+  postgres:
+    image: postgres:15-alpine
+    container_name: kprcli-postgres
+    environment:
+      - POSTGRES_DB=kprcli
+      - POSTGRES_USER=kprcli
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kprcli"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - local-db  # Only start if using local database instead of Supabase
+
+  # Nginx - Reverse Proxy & Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: kprcli-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - kprcli-web
+      - kprcli-api
+      - kprcli-admin
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  playwright_cache:
+    driver: local
+  telegram_data:
+    driver: local
+  admin_data:
+    driver: local
+  admin_channel_data:
+    driver: local
+  ai_models:
+    driver: local
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+    driver_opts:
+      o: bind
+      device: ./data/postgres
+
+networks:
+  kprcli-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+
+# Health check and monitoring
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+# Logging configuration
+x-logging-defaults: &logging-defaults
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"

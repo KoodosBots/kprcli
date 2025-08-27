@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Development environment
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/workspace
+      - node_modules:/workspace/node_modules
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+
+  # CLI service for testing
+  cli:
+    build:
+      context: ./packages/cli
+      dockerfile: Dockerfile
+    volumes:
+      - ./packages/cli:/app
+      - cli_data:/data
+    environment:
+      - DATA_DIR=/data
+    stdin_open: true
+    tty: true
+
+  # Browser automation service
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.40.0-focal
+    volumes:
+      - ./packages/cli:/app
+      - playwright_cache:/ms-playwright
+    environment:
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    working_dir: /app
+    command: tail -f /dev/null
+
+volumes:
+  node_modules:
+  cli_data:
+  playwright_cache:

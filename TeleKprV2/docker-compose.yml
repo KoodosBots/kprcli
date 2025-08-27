@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    command: node index.js
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - telekpr-network
+
+  admin:
+    build: .
+    command: node server.js
+    ports:
+      - "8080:8080"
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - telekpr-network
+
+networks:
+  telekpr-network:
+    driver: bridge

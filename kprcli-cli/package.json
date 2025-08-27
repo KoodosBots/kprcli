@@ -1,0 +1,39 @@
+{
+  "name": "kprcli",
+  "version": "1.0.0",
+  "description": "KprCli - CLI for form automation and device authorization",
+  "main": "dist/index.js",
+  "bin": {
+    "kprcli": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest"
+  },
+  "keywords": ["cli", "automation", "forms", "auth"],
+  "author": "KprCli Team",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "axios": "^1.6.0",
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.0",
+    "jsonwebtoken": "^9.0.0",
+    "open": "^10.0.0",
+    "ora": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/inquirer": "^9.0.0",
+    "@types/jsonwebtoken": "^9.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

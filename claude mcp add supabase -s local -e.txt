@@ -1,0 +1,21 @@
+claude mcp add supabase -s local -e SUPABASE_ACCESS_TOKEN=sbp_bd34d4c908d632cb7f62eb0f585ae22bff8d3e36 -- npx -y @supabase/mcp-server-supabase@latest
+
+
+
+
+
+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
+
+
+
+pZzqibu3BMNIojUX
+
+G/LWu42S!M.eQmX
+
+Zone ID
+1ed0bea097d28e281cde260c87b389c4
+Account ID
+f82db01fe3722863f8166b56cfd9a315
+
+KprCLi
+k55p4w/VMmYqDk2

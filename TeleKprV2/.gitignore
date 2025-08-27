@@ -1,0 +1,141 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Logs
+logs/
+*.log
+*.log.*
+*.out
+
+# Analysis and reports
+*-analysis/
+*-reports/
+*-scripts/
+error-images/
+errorimages/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Temporary folders
+tmp/
+temp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# PM2 files
+.pm2/
+
+# Docker volumes
+docker-data/
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.p12
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Build outputs
+dist/
+build/
+
+# Test coverage
+coverage/
+
+# Local development
+.local/
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Application specific exclusions
+backups/
+supabase/.env
+beef/
+.beef/
+docker-admin-deploy/
+telekpr-deploy/
+standalone-admin/
+.supabase/
+.claude/
+.claude.json
+.claude.json.backup
+
+# Test and debug files (excluding from repo)
+test-*.js
+debug-*.js
+analyze-*.js
+audit-*.js
+check-*.js
+cleanup-*.js
+find-*.js
+fix-*.js
+monitor-*.js
+process-*.js
+update-*.js
+*.test.js
+*.spec.js
+
+# MCP configuration
+mcp-config.json
+
+# Image files in root (keeping essential ones)
+1.png
+11*.png
+nav.png
+place.jpg
+
+# Report files
+*.md.backup
+postal-code-report.md
+
+# SQL migration files (keeping main schema only)
+add_password_field.sql
+migrate_customer_profiles_fixed.sql
+fix_updated_at.sql
+
+# Archive files
+*.tar.gz
+*.zip
+*.rar

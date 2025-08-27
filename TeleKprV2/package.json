@@ -1,0 +1,57 @@
+{
+  "name": "telekpr",
+  "version": "1.0.0",
+  "description": "Telegram bot for customer registration and order management",
+  "main": "src/bot/index.js",
+  "scripts": {
+    "start": "node src/bot/index.js",
+    "dev": "node src/bot/index.js",
+    "monitor": "node monitor.js",
+    "test": "echo \"No tests specified\" && exit 0",
+    "docker:build": "docker build -t telekpr:latest .",
+    "docker:run": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f telekpr-bot",
+    "docker:monitor": "docker-compose logs -f telekpr-monitor",
+    "docker:dev": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml up",
+    "docker:prod": "docker-compose --profile monitoring up -d",
+    "docker:clean": "docker-compose down -v && docker system prune -f",
+    "migrate": "node scripts/migrate.js",
+    "migrate:status": "node scripts/migrate.js status",
+    "migrate:up": "node scripts/migrate.js migrate",
+    "migrate:create": "node scripts/migrate.js create",
+    "migrate:rollback": "node scripts/migrate.js rollback"
+  },
+  "dependencies": {
+    "@sentry/node": "^7.120.3",
+    "@supabase/supabase-js": "^2.38.0",
+    "axios": "^1.6.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.0",
+    "helmet": "^7.1.0",
+    "joi": "^17.11.0",
+    "puppeteer": "^24.11.2",
+    "puppeteer-mcp-server": "^0.7.2",
+    "rate-limiter-flexible": "^5.0.3",
+    "socket.io": "^4.8.1",
+    "ssh2": "^1.15.0",
+    "supabase": "^2.26.9",
+    "telegraf": "^4.14.0",
+    "uuid": "^9.0.1",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^4.7.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "customer-management",
+    "supabase"
+  ],
+  "author": "TeleKpr",
+  "license": "MIT"
+}

@@ -1,0 +1,114 @@
+# KprCli Simple Deployment - Essential Services Only
+# Perfect for clients who want a quick, minimal setup
+
+services:
+  # Nginx Reverse Proxy - Host Computer Session Tracking
+  nginx:
+    image: nginx:alpine
+    container_name: kprcli-nginx
+    ports:
+      - "80:80"
+      # - "443:443"  # HTTPS disabled until SSL certificates are configured
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/http-locations.conf:/etc/nginx/conf.d/http-locations.conf:ro
+      - ./nginx/logs:/var/log/nginx
+      - ./nginx/ssl:/etc/ssl/certs:ro
+    depends_on:
+      - kprcli-web
+      - redis
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/nginx-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Web Interface - Main KprCli Application
+  kprcli-web:
+    build:
+      context: ./elite-starter
+      dockerfile: Dockerfile
+    container_name: kprcli-web
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      # Clerk Authentication
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - NEXT_PUBLIC_CLERK_FRONTEND_API_URL=${NEXT_PUBLIC_CLERK_FRONTEND_API_URL}
+      - CLERK_WEBHOOK_SECRET=${CLERK_WEBHOOK_SECRET}
+      # Supabase Database
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      # Redis Cache
+      - REDIS_URL=redis://redis:6379
+      # Telegram Bot
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      # JWT Security
+      - JWT_SECRET=${JWT_SECRET}
+      # App Configuration
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost}
+      # Clerk Routes
+      - NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+      - NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+      - NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
+      - NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
+      # Feature Flags
+      - NEXT_PUBLIC_AI_AUTOMATION_ENABLED=true
+      - NEXT_PUBLIC_TELEGRAM_BOT_ENABLED=true
+      - NEXT_PUBLIC_FORM_TRAINING_ENABLED=true
+      - NEXT_PUBLIC_MULTI_LLM_ENABLED=true
+      - NEXT_PUBLIC_GROQ_ENABLED=true
+      - NEXT_PUBLIC_OPENROUTER_ENABLED=true
+      - NEXT_PUBLIC_OLLAMA_ENABLED=true
+    # Production mode - no volume mounts to use built container
+    depends_on:
+      - redis
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis - Token Storage & Caching
+  redis:
+    image: redis:7-alpine
+    container_name: kprcli-redis
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - kprcli-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  kprcli-network:
+    driver: bridge
+
+# Simple logging configuration
+x-logging-defaults: &logging-defaults
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"

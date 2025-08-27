@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" data-state="loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Lightning Autofill : Options</title>
+<link rel="shortcut icon" href="images/icon16.png">
+<link rel="stylesheet" href="css/options.css">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<style>
+[data-state="loading"] body {
+  opacity: 0;
+}
+</style>
+<script src="js/options.js" type="module"></script>
+</head>
+<body id="fields">
+
+<header>
+  <h1 class="title">Lightning Autofill Options</h1>
+  <div class="stats hint">
+    <span id="nav-datasize" data-i18n="generalData"></span>
+    <span class="breadcrumb">|</span>
+    <a id="nav-whatsnew" data-i18n="generalWhatsNew"></a>
+  </div>
+  <div id="sync-status" class="hint" data-i18n="statusSync"></div>
+</header>
+
+<nav>
+  <ul>
+    <li><a id="nav-fields" data-i18n="optionsTabsFields"></a></li>
+    <li><a id="nav-advanced" data-i18n="optionsTabsAdvanced"></a></li>
+    <li><a id="nav-exceptions" data-i18n="optionsTabsExceptions"></a></li>
+    <li><a id="nav-textclips" data-i18n="optionsTabsTextClips"></a></li>
+    <li><a id="nav-variables" data-i18n="optionsTabsVariables"></a></li>
+    <li><a id="nav-settings" data-i18n="optionsTabsSettings"></a></li>
+    <li><a id="nav-sync" data-i18n="optionsTabsSync"></a></li>
+    <li><a id="nav-support" data-i18n="optionsTabsSupport"></a></li>
+    <li><a id="nav-news" data-i18n="optionsTabsNews"></a></li>
+  </ul>
+</nav>
+
+<main>
+  <div id="tab-fields" class="tab-content">
+    <div id="content-fields-wrapper">
+      <table id="content-fields">
+        <thead>
+          <tr>
+            <th class="icon-help"><a id="help-type" class="tt-anchor"></a><span data-i18n="optionsFieldsTypeCol"></span></th>
+            <th class="icon-help"><a id="help-name" class="tt-anchor"></a><span data-i18n="optionsFieldsNameCol"></span></th>
+            <th class="icon-help"><a id="help-value" class="tt-anchor"></a><span data-i18n="optionsFieldsValueCol"></span></th>
+            <th class="icon-help"><a id="help-site" class="tt-anchor"></a><span data-i18n="optionsFieldsSiteCol"></span></th>
+            <th class="icon-help"><a id="help-mode" class="tt-anchor"></a><span data-i18n="optionsFieldsModeCol"></span></th>
+            <th id="col-action">&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody id="content-fields-body"></tbody>
+      </table>
+    </div>
+    <form id="content-search">
+      <input type="search" id="content-searchbox" spellcheck="false" title="" data-i18n="buttonsSearchTT" required>
+    </form>
+    <div id="content-actionbar">
+      <button id="button-add" data-i18n="buttonsAdd">&plus;</button>
+      <button id="button-search" data-i18n="buttonsSearch">
+        <svg role="img" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <select id="content-cats">
+        <option value="_label" class="menu-label" data-i18n="optionsProfilesMenuProfiles" disabled></option>
+        <option value="all" data-i18n="optionsProfilesMenuAll"></option>
+        <option value="" data-i18n="optionsProfilesMenuUnfiled"></option>
+        <option value="_catman" class="menu-action"></option>
+        <option value="---" role="separator" disabled></option>
+      </select>
+      <button id="button-manage" data-i18n="buttonsManage">
+        <svg role="img" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"/><path d="M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"/><path d="M3 5a2 2 0 0 0 2 2h3"/><path d="M3 3v13a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+      <span class="flex-item"><label for="content-hotkey" data-i18n="optionsFieldsHotkey">:</label>&nbsp;<input id="content-hotkey" spellcheck="false" data-i18n="optionsTabsHotkeyInput"></span>
+      <span class="flex-item"><label for="content-site" data-i18n="optionsFieldsSite">:</label>&nbsp;<input id="content-site" spellcheck="false" data-i18n="optionsTabsSiteInput"></span>
+    </div>
+  </div>
+  <div id="tab-advanced" class="tab-content">
+    <p data-i18n="optionsAdvancedIntro"></p>
+    <textarea id="content-advanced" rows="30" placeholder="c1: all=true&#10;r1: delay=1.5" spellcheck="false"></textarea>
+  </div>
+  <div id="tab-exceptions" class="tab-content">
+    <p data-i18n="optionsExceptionsIntro"></p>
+    <textarea id="content-exceptions" rows="30" spellcheck="false"></textarea>
+  </div>
+  <div id="tab-textclips" class="tab-content">
+    <p data-i18n="optionsTextClipsIntro"></p>
+    <textarea id="content-textclips" rows="30" spellcheck="false"></textarea>
+  </div>
+  <div id="tab-variables" class="tab-content">
+    <p data-i18n="optionsVariablesIntro"></p>
+    <p data-i18n="optionsVariablesUpgradePro" hidden></p>
+    <textarea id="content-variables" rows="30" spellcheck="false"></textarea>
+  </div>
+  <div id="tab-settings" class="tab-content">
+    <details id="group-s">
+      <summary data-i18n="optionsOtherSubscription"></summary>
+      <p class="actions">
+        <input id="content-orderno" class="masked" autocomplete="off" maxlength="8" pattern="[A-Z0-9]{8}" placeholder="Invoice number" spellcheck="false" required>
+        <button id="button-verify" data-i18n="buttonsActivateSubscription" disabled></button>
+      </p>
+      <p class="hint" data-i18n="optionsOtherSubHelp"></p>
+      <div id="content-subscription" hidden>
+        <p><strong></strong></p>
+        <p class="actions" hidden>
+          <button id="button-subscribe" class="subscribe" data-i18n="buttonsSubscribe"></button>
+        </p>
+        <p class="actions" hidden>
+          <button id="button-portal" data-i18n="buttonsCustomerPortal"></button>
+        </p>
+      </div>
+    </details>
+    <details id="group-o">
+      <summary data-i18n="optionsOtherOperation"></summary>
+      <p class="checkbox">
+        <input type="checkbox" id="content-attributesoff"><label for="content-attributesoff" data-i18n="optionsOtherAttributesOff">:</label>
+        <input id="content-attributesoff-list" spellcheck="false" data-i18n="optionsOtherAttributesOffInput">
+      </p>
+      <p class="hint" data-i18n="optionsOtherAttributesOffHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-activecat"><label for="content-activecat" data-i18n="optionsOtherActiveProfile"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherActiveProfileHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-delay"><label for="content-delay" data-i18n="optionsOtherDelay">:</label>
+        <span class="nowrap">
+          <input type="range" id="content-delay-sec" min="0.5" max="60" step="0.5" data-i18n="optionsOtherDelaySecInput">
+          <span id="content-delay-out"></span>
+          <span data-i18n="optionsOtherDelaySec"></span>
+        </span>
+      </p>
+      <p class="hint" data-i18n="optionsOtherDelayHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-randdelay"><label for="content-randdelay" data-i18n="optionsOtherRandDelay"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherRandDelayHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-backup"><label for="content-backup" data-i18n="optionsOtherBackup">:</label>
+        <span class="nowrap">
+          <input type="number" id="content-backup-chars" min="1" max="10000" data-i18n="optionsOtherBackupCharsInput">
+          <span data-i18n="optionsOtherBackupChars"></span>
+        </span>
+      </p>
+      <p class="hint" data-i18n="optionsOtherBackupHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-debug"><label for="content-debug" data-i18n="optionsOtherDebug"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherDebugHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-vars"><label for="content-vars" data-i18n="optionsOtherVars"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherVarsHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-manual"><label for="content-manual" data-i18n="optionsOtherManual"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherManualHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-overwrite"><label for="content-overwrite" data-i18n="optionsOtherOverwrite"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherOverwriteHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-reveal"><label for="content-reveal" data-i18n="optionsOtherRevealPassword">:</label>
+        <select id="content-reveal-sel">
+          <option value="0">On focus</option>
+          <option value="1">On hover</option>
+        </select>
+      </p>
+      <p class="hint" data-i18n="optionsOtherRevealPasswordHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-sitefilters"><label for="content-sitefilters" data-i18n="optionsOtherSiteFilters">:</label>
+        <select id="content-sitefilters-sel">
+          <option value="3">Domain</option>
+          <option value="0">Domain + Path</option>
+          <option value="1">Domain + Path + Query</option>
+          <option value="2">Domain + Path + Query + Hash</option>
+        </select>
+      </p>
+      <p class="hint" data-i18n="optionsOtherSiteFiltersHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-skiphidden"><label for="content-skiphidden" data-i18n="optionsOtherSkipHidden"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherSkipHiddenHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-turbo"><label for="content-turbo" data-i18n="optionsOtherTurbo"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherTurboHelp"></p>
+    </details>
+    <details id="group-i">
+      <summary data-i18n="optionsOtherInterface"></summary>
+      <p class="checkbox">
+        <input type="checkbox" id="content-closeinfobar"><label for="content-closeinfobar" data-i18n="optionsOtherCloseInfobar">:</label>
+        <select id="content-closeinfobar-sel">
+          <option data-i18n="optionsOtherCloseInfobarExe"></option>
+          <option data-i18n="optionsOtherCloseInfobarGen"></option>
+          <option data-i18n="optionsOtherCloseInfobarAlways"></option>
+        </select>
+      </p>
+      <p class="hint" data-i18n="optionsOtherCloseInfobarHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-menu"><label for="content-menu" data-i18n="optionsOtherMenu">:</label>
+        <select id="content-menu-sel">
+          <option data-i18n="optionsOtherMenuCategory"></option>
+          <option data-i18n="optionsOtherMenuFirstChar"></option>
+          <option data-i18n="optionsOtherMenuShowAll"></option>
+        </select>
+      </p>
+      <p class="hint" data-i18n="optionsOtherMenuHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-devmodepopup"><label for="content-devmodepopup" data-i18n="optionsOtherDevModePopup"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherDevModePopupHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-filtercats"><label for="content-filtercats" data-i18n="optionsOtherFilterProfiles"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherFilterProfilesHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-fluid"><label for="content-fluid" data-i18n="optionsOtherFluid"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherFluidHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-hidebackup"><label for="content-hidebackup" data-i18n="optionsOtherHideBackup"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherHideBackupHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-badge"><label for="content-badge" data-i18n="optionsOtherBadge"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherBadgeHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-ietextbox"><label for="content-ietextbox" data-i18n="optionsOtherIETextBox"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherIETextBoxHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-mask"><label for="content-mask" data-i18n="optionsOtherMask"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherMaskHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-review"><label for="content-review" data-i18n="optionsOtherReview">:</label>
+        <select id="content-review-sel">
+          <option data-i18n="optionsOtherReviewBoth"></option>
+          <option data-i18n="optionsOtherReviewImport"></option>
+          <option data-i18n="optionsOtherReviewRestore"></option>
+        </select>
+      </p>
+      <p class="hint" data-i18n="optionsOtherReviewHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-sound"><label for="content-sound" data-i18n="optionsOtherSound"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherSoundHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-theme"><label for="content-theme" data-i18n="optionsOtherTheme">:</label>
+        <select id="content-theme-sel">
+          <option>Auto</option>
+          <option>Black</option>
+          <option value="custom">Custom</option>
+          <option value="---" role="separator" disabled>—————————</option>
+          <option>Apathy</option>
+          <option>Apprentice</option>
+          <option>Ashes</option>
+          <option>Atelier Cave</option>
+          <option>Atelier Dune</option>
+          <option>Atelier Estuary</option>
+          <option>Atelier Forest</option>
+          <option>Atelier Heath</option>
+          <option>Atelier Lakeside</option>
+          <option>Atelier Plateau</option>
+          <option>Atelier Savanna</option>
+          <option>Atelier Seaside</option>
+          <option>Atelier Sulphurpool</option>
+          <option>Atlas</option>
+          <option>Atom One Dark</option>
+          <option>Atom One Light</option>
+          <option>Bespin</option>
+          <option>Brogrammer</option>
+          <option>Brush Trees Dark</option>
+          <option>Brush Trees Light</option>
+          <option>Chalk</option>
+          <option>Circus</option>
+          <option>Cupcake</option>
+          <option>Darcula</option>
+          <option>Dark Violet</option>
+          <option>Darkmoss</option>
+          <option>Darktooth</option>
+          <option>Dracula</option>
+          <option>Eighties</option>
+          <option>Embers</option>
+          <option>Flat</option>
+          <option>Fruit Soda</option>
+          <option>Gigavolt</option>
+          <option>Green Screen</option>
+          <option>Heetch Dark</option>
+          <option>Heetch Light</option>
+          <option>Helios</option>
+          <option>Hopscotch</option>
+          <option>Icy Dark</option>
+          <option>Kimbie Dark</option>
+          <option>Kimbie Light</option>
+          <option>London Tube</option>
+          <option>Marrakesh</option>
+          <option>Material</option>
+          <option>Mellow Purple</option>
+          <option>Mocha</option>
+          <option>Monokai</option>
+          <option>Nebula</option>
+          <option>Night Owl</option>
+          <option>Nord</option>
+          <option>Nova</option>
+          <option>Obsidian</option>
+          <option>Ocean</option>
+          <option>Outrun</option>
+          <option>Palenight</option>
+          <option>Paraiso Dark</option>
+          <option>Paraiso Light</option>
+          <option>Pasque</option>
+          <option>Rebecca</option>
+          <option>Rose Pine</option>
+          <option>Rose Pine Dawn</option>
+          <option>Rose Pine Moon</option>
+          <option>Sandcastle</option>
+          <option>School Book</option>
+          <option>Selenized Black</option>
+          <option>Selenized Dark</option>
+          <option>Selenized Light</option>
+          <option>Shades of Purple</option>
+          <option>Silk Dark</option>
+          <option>Silk Light</option>
+          <option>Snazzy</option>
+          <option>Solar Flare Dark</option>
+          <option>Solar Flare Light</option>
+          <option>Solarized Dark</option>
+          <option>Solarized Light</option>
+          <option>Summercamp</option>
+          <option>Tango</option>
+          <option>Tender</option>
+          <option>Tokyo Night Dark</option>
+          <option>Tokyo Night Light</option>
+          <option>Tomorrow Night</option>
+          <option>Tomorrow Night Blue</option>
+          <option>Twilight</option>
+          <option>Unikitty Dark</option>
+          <option>Unikitty Light</option>
+          <option>Vulcan</option>
+          <option>Woodland</option>
+          <option>Zenburn</option>
+        </select>
+        <input id="content-theme-bg" maxlength="18" placeholder="#FFFFFF" size="12" spellcheck="false" data-i18n="optionsOtherThemeBg">
+        <input id="content-theme-fg" maxlength="18" placeholder="#000000" size="12" spellcheck="false" data-i18n="optionsOtherThemeFg">
+      </p>
+      <p class="hint" data-i18n="optionsOtherThemeHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-tooltips"><label for="content-tooltips" data-i18n="optionsOtherTooltips"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherTooltipsHelp"></p>
+    </details>
+    <details id="group-e">
+      <summary data-i18n="optionsOtherExperimental"></summary>
+      <p class="warning" data-i18n="optionsOtherExperimentalNotice"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-autocomplete"><label for="content-autocomplete" data-i18n="optionsOtherAutocomplete">:</label>
+        <input id="content-autocomplete-trigger" maxlength="1" size="1" spellcheck="false" data-i18n="optionsOtherAutocompleteInput">
+      </p>
+      <p id="content-autocomplete-help" class="hint"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-captchas" disabled><label for="content-captchas" data-i18n="optionsOtherCaptchas"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherCaptchasHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-bisync"><label for="content-bisync" data-i18n="optionsOtherBiSync"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherBiSyncHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-parselabels"><label for="content-parselabels" data-i18n="optionsOtherParseLabels"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherParseLabelsHelp"></p>
+      <p class="checkbox">
+        <input type="checkbox" id="content-expirecats"><label for="content-expirecats" data-i18n="optionsOtherProfileExpiration"></label>
+      </p>
+      <p class="hint" data-i18n="optionsOtherProfileExpirationHelp"></p>
+    </details>
+  </div>
+  <div id="tab-sync" class="tab-content">
+    <details id="group-gs">
+      <summary>Google Sheets</summary>
+      <p data-i18n="optionsGoogleSheetsIntro"></p>
+      <p class="actions">
+        <button id="button-connect" data-i18n="buttonsConnect" disabled></button>
+        <button id="button-opensheets" data-i18n="buttonsOpenSheets" disabled></button>
+      </p>
+      <p class="field">
+        <label for="content-spreadsheetname" data-i18n="optionsGoogleSheetsDefaultName">:</label>
+        <input id="content-spreadsheetname" placeholder="Lightning Autofill backup" spellcheck="false" disabled>
+      </p>
+      <p class="field">
+        <label for="content-spreadsheetid" data-i18n="optionsGoogleSheetsActiveSS">:</label>
+        <select id="content-spreadsheetid" disabled>
+          <option value="---" role="separator" disabled></option>
+          <option value="" data-i18n="optionsGoogleSheetsNew"></option>
+        </select>
+      </p>
+      <p>
+        <button id="button-sync-from" data-i18n="buttonsSyncFrom" disabled></button>
+        <button id="button-sync-to" data-i18n="buttonsSyncTo" disabled></button>
+      </p>
+      <p data-i18n="optionsGoogleSheetsUpgrade" hidden></p>
+    </details>
+    <details id="group-ie">
+      <summary data-i18n="optionsTabsImportExport"></summary>
+      <p data-i18n="optionsImportExportIntro"></p>
+      <p>
+        <textarea id="content-ie" rows="20" spellcheck="false"></textarea>
+      </p>
+      <p class="actions">
+        <input type="file" id="file-import" accept="text/csv, text/tab-separated-values" hidden>
+        <button id="button-import" data-i18n="buttonsImport"></button>
+        <a id="file-export"></a>
+        <button id="button-export" data-i18n="buttonsExport"></button>
+        <span class="nowrap">
+          <span data-i18n="optionsImportMode">:</span>
+          <input type="radio" id="radio-append" name="import-mode"><label for="radio-append" data-i18n="optionsImportAppend"></label>
+          <input type="radio" id="radio-replace" name="import-mode"><label for="radio-replace" data-i18n="optionsImportReplace"></label>
+        </span>
+      </p>
+      <h3 data-i18n="optionsImportUrlHeading"></h3>
+      <p data-i18n="optionsImportUrl"></p>
+      <p class="field">
+        <input id="content-importurl" placeholder="File URL" spellcheck="false">
+      </p>
+      <p class="actions">
+        <button id="button-importurl" data-i18n="buttonsImportUrl"></button>
+      </p>
+    </details>
+  </div>
+  <div id="tab-support" class="tab-content prose">
+    <p><em data-i18n="generalLoading"></em></p>
+  </div>
+  <div id="tab-news" class="tab-content prose">
+    <p><em data-i18n="generalLoading"></em></p>
+  </div>
+</main>
+
+<footer>
+  <p class="actions">
+    <button id="button-save" data-i18n="buttonsSave"></button>
+    <button id="button-reset" data-i18n="buttonsReset"></button>
+    <button id="button-help" data-i18n="buttonsHelp"></button>
+  </p>
+  <p class="copyright hint">
+    &copy; 2010&ndash;<span id="yearnow"></span>&nbsp;<a href="https://www.tohodo.com/" target="_tohodo">tohodo.com</a>
+    <span class="breadcrumb">|</span>
+    <a href="https://www.tohodo.com/autofill/privacy" target="_tohodo" data-i18n="linksPrivacyPolicy"></a>
+    <span class="breadcrumb">|</span>
+    <a href="https://www.tohodo.com/autofill/terms" target="_tohodo" data-i18n="linksTermsOfUse"></a>
+    <span class="breadcrumb">|</span>
+  </p>
+  <p class="share hint">
+    ⭐&nbsp;<a id="autofill-stars" data-i18n="autofillStarsLink">Autofill Stars</a>&nbsp;⭐
+  </p>
+</footer>
+
+<div id="light"><div id="box" tabindex="-1"></div></div>
+<div id="status"><span></span></div>
+<div id="tt"></div>
+
+</body>
+</html>

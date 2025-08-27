@@ -1,0 +1,25 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "npm install && npm run build"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "npm start",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10,
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 3
+  },
+  "environments": {
+    "production": {
+      "NEXT_PUBLIC_APP_URL": "https://app.kprcli.com",
+      "NODE_ENV": "production"
+    },
+    "staging": {
+      "NEXT_PUBLIC_APP_URL": "https://staging.app.kprcli.com",
+      "NODE_ENV": "staging"
+    }
+  }
+}

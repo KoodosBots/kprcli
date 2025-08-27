@@ -1,0 +1,35 @@
+# Development Dockerfile for AI Form Filler
+FROM node:18-alpine
+
+# Install Go
+RUN apk add --no-cache go git
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy package files
+COPY package*.json ./
+COPY packages/shared/package*.json ./packages/shared/
+COPY packages/extension/package*.json ./packages/extension/
+
+# Install Node.js dependencies
+RUN npm install
+
+# Copy Go module files
+COPY packages/cli/go.mod packages/cli/go.sum ./packages/cli/
+
+# Install Go dependencies
+WORKDIR /workspace/packages/cli
+RUN go mod download
+
+# Back to workspace root
+WORKDIR /workspace
+
+# Install Playwright browsers
+RUN npx playwright install chromium
+
+# Expose ports
+EXPOSE 3000 8080
+
+# Default command
+CMD ["npm", "run", "dev"]

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Form Filler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            color: #ffffff;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: #2d2d2d;
+            min-height: 100vh;
+            padding: 20px 0;
+            border-right: 1px solid #404040;
+        }
+        
+        .sidebar-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-item:hover {
+            background: #3a3a3a;
+        }
+        
+        .sidebar-item.active {
+            background: #3a3a3a;
+            border-left-color: #667eea;
+        }
+        
+        .main-content {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 40px;
+        }
+        
+        .content-header {
+            margin-bottom: 30px;
+        }
+        
+        .content-header h1 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .form-section {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 30px;
+            border: 1px solid #404040;
+        }
+        
+        .section-title {
+            color: #ffffff;
+            font-size: 1.3em;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cccccc;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1a1a1a;
+            border: 1px solid #404040;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .form-group input::placeholder {
+            color: #666666;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .profile-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .profile-item {
+            background: #1a1a1a;
+            border: 1px solid #404040;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .profile-item:hover {
+            background: #333333;
+            border-color: #667eea;
+        }
+        
+        .profile-item.selected {
+            background: #667eea;
+            border-color: #667eea;
+        }
+        
+        .profile-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .profile-data {
+            font-size: 0.9em;
+            color: #cccccc;
+        }
+        
+        .profile-item.selected .profile-data {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .status-message.success {
+            background: rgba(72, 187, 120, 0.2);
+            color: #68d391;
+            border: 1px solid rgba(72, 187, 120, 0.3);
+        }
+        
+        .status-message.error {
+            background: rgba(245, 101, 101, 0.2);
+            color: #fc8181;
+            border: 1px solid rgba(245, 101, 101, 0.3);
+        }
+        
+        .url-input-group {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        
+        .url-input-group .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                display: flex;
+                overflow-x: auto;
+            }
+            
+            .sidebar-item {
+                white-space: nowrap;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-item active" onclick="showSection('profile')">
+            <span>😊</span> Profile
+        </div>
+        <div class="sidebar-item" onclick="showSection('apartment')">
+            <span>🏠</span> Apartment
+        </div>
+        <div class="sidebar-item" onclick="showSection('notifications')">
+            <span>🔔</span> Notifications
+        </div>
+        <div class="sidebar-item" onclick="showSection('billing')">
+            <span>💳</span> Billing
+        </div>
+        <div class="sidebar-item" onclick="showSection('appearance')">
+            <span>🎨</span> Appearance
+        </div>
+        <div class="sidebar-item" onclick="showSection('security')">
+            <span>🔒</span> Security
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="content-header">
+            <h1 id="sectionTitle">Personal Information</h1>
+        </div>
+        
+        <div class="form-section">
+            <div id="profileSection">
+                <h2 class="section-title">Personal Information</h2>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" id="firstName" placeholder="Enter first name" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" id="lastName" placeholder="Enter last name" />
+                    </div>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="Enter email address" />
+                </div>
+                
+                <div class="form-group full-width">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phone" placeholder="Enter phone number" />
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="saveProfile()">Save Profile</button>
+                </div>
+            </div>
+            
+            <div id="fillFormSection" style="display: none;">
+                <h2 class="section-title">🚀 Fill Form</h2>
+                
+                <div class="profile-list" id="profileList">
+                    <!-- Profiles will be loaded here -->
+                </div>
+                
+                <button class="btn" onclick="showNewProfileForm()">+ New Profile</button>
+                
+                <div class="url-input-group" style="margin-top: 20px;">
+                    <div class="form-group">
+                        <label>Website URL</label>
+                        <input type="url" id="targetUrl" placeholder="Enter website URL (e.g., https://example.com/form)" />
+                    </div>
+                    <button class="btn btn-success" onclick="fillForm()">Fill Form</button>
+                </div>
+                
+                <div id="fillStatus" class="status-message"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let profiles = [];
+        let selectedProfileId = null;
+        let currentSection = 'profile';
+        
+        // Show different sections
+        function showSection(section) {
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.sidebar-item').classList.add('active');
+            
+            // Update section title and content
+            const titles = {
+                'profile': 'Personal Information',
+                'billing': 'Billing Information',
+                'appearance': 'Appearance Settings',
+                'security': 'Security Settings'
+            };
+            
+            document.getElementById('sectionTitle').textContent = titles[section] || 'Settings';
+            currentSection = section;
+            
+            // Show/hide sections
+            if (section === 'profile') {
+                document.getElementById('profileSection').style.display = 'block';
+                document.getElementById('fillFormSection').style.display = 'none';
+            } else {
+                document.getElementById('profileSection').style.display = 'none';
+                document.getElementById('fillFormSection').style.display = 'block';
+            }
+        }
+        
+        // Load profiles on page load
+        async function loadProfiles() {
+            try {
+                const response = await fetch('/api/profiles');
+                profiles = await response.json();
+                renderProfiles();
+            } catch (error) {
+                console.error('Failed to load profiles:', error);
+            }
+        }
+        
+        // Render profiles list
+        function renderProfiles() {
+            const profileList = document.getElementById('profileList');
+            
+            if (profiles.length === 0) {
+                profileList.innerHTML = '<p style="color: #666; text-align: center;">No profiles yet</p>';
+                return;
+            }
+            
+            profileList.innerHTML = profiles.map(profile => `
+                <div class="profile-item ${profile.id === selectedProfileId ? 'selected' : ''}" 
+                     onclick="selectProfile('${profile.id}')">
+                    <div class="profile-name">${profile.name}</div>
+                    <div class="profile-data">
+                        ${profile.data.email || 'No email'} | 
+                        ${Object.keys(profile.data).length} fields
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Select a profile
+        function selectProfile(profileId) {
+            selectedProfileId = profileId;
+            const profile = profiles.find(p => p.id === profileId);
+            renderProfiles();
+            
+            // Load profile data into form
+            if (profile && profile.data) {
+                document.getElementById('firstName').value = profile.data.firstName || '';
+                document.getElementById('lastName').value = profile.data.lastName || '';
+                document.getElementById('email').value = profile.data.email || '';
+                document.getElementById('phone').value = profile.data.phone || '';
+            }
+        }
+        
+        // Show new profile form
+        function showNewProfileForm() {
+            selectedProfileId = null;
+            renderProfiles();
+            // Clear form
+            document.getElementById('firstName').value = '';
+            document.getElementById('lastName').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('phone').value = '';
+        }
+        
+        // Save profile
+        async function saveProfile() {
+            const profileData = {
+                name: document.getElementById('firstName').value + ' ' + document.getElementById('lastName').value,
+                data: {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value
+                }
+            };
+            
+            if (!profileData.data.firstName) {
+                showStatus('Please enter a first name', 'error');
+                return;
+            }
+            
+            try {
+                let response;
+                if (!selectedProfileId) {
+                    response = await fetch('/api/profiles', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(profileData)
+                    });
+                } else {
+                    response = await fetch(`/api/profiles?id=${selectedProfileId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(profileData)
+                    });
+                }
+                
+                if (response.ok) {
+                    await loadProfiles();
+                    showStatus('Profile saved successfully!', 'success');
+                }
+            } catch (error) {
+                showStatus('Failed to save profile', 'error');
+            }
+        }
+        
+        // Fill form
+        async function fillForm() {
+            if (!selectedProfileId) {
+                showStatus('Please select a profile first', 'error', 'fillStatus');
+                return;
+            }
+            
+            const url = document.getElementById('targetUrl').value;
+            if (!url) {
+                showStatus('Please enter a URL', 'error', 'fillStatus');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/fill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        profile_id: selectedProfileId,
+                        url: url
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showStatus(`✅ ${result.message}`, 'success', 'fillStatus');
+                } else {
+                    showStatus('Failed to fill form', 'error', 'fillStatus');
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error', 'fillStatus');
+            }
+        }
+        
+        // Show status message
+        function showStatus(message, type, elementId = 'fillStatus') {
+            const statusEl = document.getElementById(elementId);
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Load profiles when page loads
+        loadProfiles();
+    </script>
+</body>
+</html>

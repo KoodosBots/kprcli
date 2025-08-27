@@ -1,0 +1,9 @@
+{
+  "name": "com.ai_form_filler.cli",
+  "description": "AI Form Filler CLI Native Messaging Host",
+  "path": "ai-form-filler-cli",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://EXTENSION_ID_PLACEHOLDER/"
+  ]
+}

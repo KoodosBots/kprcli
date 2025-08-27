@@ -1,0 +1,153 @@
+1. AI Training & Template Robustness: The "AI Training Mode" is a core feature.
+      When a website's structure changes (which happens often), how will the system
+      detect that a saved template is broken? Will it automatically attempt to
+      "re-learn" the form, or will it simply notify the user that the template
+      failed?
+
+A: if the templates brakes relearn the site again and log that site had to be relearned
+
+
+
+   2. CAPTCHA Handling Strategy: You're planning to use third-party CAPTCHA solving
+      services. What is the fallback plan if these services are blocked, become too
+      expensive, or fail to solve a new type of CAPTCHA? How does the system
+      gracefully hand control back to the user for manual intervention?
+
+
+A: will use muilitiple CAPTCHA solvers if one fails two switch to the other we skip that site and sent to learner agents filler agents continue working and whatever other agents you think is best to have managager that manages other agents
+
+
+
+   3. Parallel Execution Resources: Running 50+ parallel browser instances is very
+      memory and CPU intensive. Have you considered the minimum system requirements
+      for your target audience's computers? Will there be a setting to limit the
+      degree of parallelism to match the user's hardware capabilities?
+
+A: will scan their system and automatically set limits for best performances but the user can turn this feature off and push their system to the limit
+ Minimum System Requirements
+For Basic Form Filling (No CAPTCHAs)
+CPU: Any dual-core processor (2010+)
+RAM: 4GB minimum, 8GB recommended
+Storage: 500MB free space
+OS: Windows 10, macOS 10.14, or Linux (Ubuntu 18.04+)
+Browser: Chrome 88+ or Edge 88+
+Internet: 1 Mbps (basic broadband)
+
+
+
+   4. Data Sync and Security: For the "Client Profile Management" with optional cloud
+      sync, who hosts the cloud storage? If it's a service you provide, what is the
+      plan for managing user encryption keys? You mention "zero-knowledge encryption"
+      in the risks section, which is excellent for privacy, but it also means that if
+      a user forgets their master password, their data is irrecoverably lost. Is this
+      the intended trade-off, and will it be clearly communicated to users?
+
+will allow the user to connect to a google drive to save data  also retrieve data googlesheet
+
+
+  User Experience & Go-to-Market
+
+   5. Onboarding and First Experience: The "AI Training Mode" requires a user to
+      perform a task once. What does the user interface for this training process look
+       like? 
+       the user clicks on register url tab
+       the user enters the url then the ai will go off and scrape the entire site or the actual url to the form
+       and the ai scrapes finds the input fields studies them then fills out the form learning and recording the json script or whateevr just script to use to replay this form filling again with clinets data
+       or can train manual they just choose train manually then registers a client with important data that will be use for the forms they train the ai on
+       they select a client form a drop down
+       selects the amount of urls they have trained to 
+       the terimal runs in the background running the order the user can run muilitiple profiles depending on their pc spec
+
+       
+       
+       How do you plan to guide a non-technical user through creating their
+      first successful automation template?
+a quick walk through step by step from getting there api keys and adding them having direct links to obtain them have my va's also train and make a youtube video
+
+
+
+   6. Error Handling and Trust: When an automated form fill fails, what does the user
+      see? 
+      they see a red x and that information gets logged and an agent at the end of the run learns from that data and fixes it self
+      
+      How do you provide clear, actionable feedback that helps them fix the issue
+       without needing technical support, thereby building trust in the system?
+
+they can contact us on telegram
+
+
+   7. Pricing Tiers: There's a significant price jump between the "Basic" ($29) and
+      "Pro" ($99) tiers. The main additions are unlimited profiles/sites and CLI
+      access. Is the CLI the primary driver for that price increase? I'm curious
+      about the value proposition for a small business owner who might not be a
+      "power user" familiar with command-line tools.
+      
+       sets limits it can be 
+
+Turbo
+
+For developers using AI as a daily productivity driver. Get everything in Pro, plus:
+Up to 10000 AI requests/month
+40 indexed codebases, up to 20000 files / codebase
+Pay-as-you-go AI overages
+Unlimited Lite AI requests
+Private email support
+Seats
+
+1
+
+x
+
+$50
+
+Business
+
+For teams scaling AI-powered development (up to 50 seats). Get everything in Turbo, plus:
+Up to 10000 AI requests/month
+40 indexed codebases, up to 20000 files / codebase
+Pay-as-you-go AI overages
+Unlimited Lite AI requests
+Automatically applied Zero Data Retention
+SAML-based SSO
+Seats
+
+1
+
+x
+
+$60
+
+=
+
+$60/mo
+
+
+Lightspeed
+
+For power users building and shipping faster with AI. Get everything in Turbo, plus:
+Up to 50000 AI requests/month
+40 indexed codebases, up to 100000 files / codebase
+Pay-as-you-go AI overages
+Seats
+
+1
+
+x
+
+$225
+
+=
+
+$225/mo
+
+
+
+  Project & Risk Management
+
+   8. Implementation Roadmap: The 3-week implementation roadmap is very ambitious, for
+       instance, allocating just two days for the "AI learning system." Does this
+      timeline represent a proof-of-concept (PoC) rather than a production-ready
+      launch? A more detailed breakdown of these complex features might reveal a more
+      realistic schedule.
+
+      ai learning is 24/7

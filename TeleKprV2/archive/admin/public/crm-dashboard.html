@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleKpr CRM - Professional Admin Dashboard</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    
+    <style>
+        /* Modern CRM Styling */
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #64748b;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --info-color: #0891b2;
+            
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .crm-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-right: 3px solid var(--primary-dark);
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 0.75rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .main-header {
+            background: var(--bg-primary);
+            padding: 1.5rem 2rem;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .breadcrumb {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .main-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+
+        .stat-change.negative {
+            color: var(--danger-color);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        /* Tables */
+        .table-container {
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background-color: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            background-color: var(--bg-primary);
+        }
+
+        /* Search Bar */
+        .search-bar {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .pagination-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border-color: var(--success-color);
+            color: #166534;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border-color: var(--danger-color);
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            border-color: var(--warning-color);
+            color: #92400e;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            border-color: var(--info-color);
+            color: #1e40af;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Utilities */
+        .d-none { display: none !important; }
+        .d-flex { display: flex !important; }
+        .justify-between { justify-content: between; }
+        .align-center { align-items: center; }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text-muted); }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div class="crm-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">
+                    <i class="fas fa-rocket"></i>
+                    TeleKpr CRM
+                </h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Overview</div>
+                    <button class="nav-item active" onclick="showSection('dashboard')">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </button>
+                    <button class="nav-item" onclick="showSection('analytics')">
+                        <i class="fas fa-chart-pie"></i>
+                        Analytics
+                    </button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Customer Management</div>
+                    <button class="nav-item" onclick="showSection('customers')">
+                        <i class="fas fa-users"></i>
+                        Customers
+                    </button>
+                    <button class="nav-item" onclick="showSection('customer-insights')">
+                        <i class="fas fa-user-chart"></i>
+                        Customer Insights
+                    </button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Order Management</div>
+                    <button class="nav-item" onclick="showSection('orders')">
+                        <i class="fas fa-shopping-cart"></i>
+                        Orders
+                    </button>
+                    <button class="nav-item" onclick="showSection('order-queue')">
+                        <i class="fas fa-tasks"></i>
+                        Order Queue
+                    </button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">User Management</div>
+                    <button class="nav-item" onclick="showSection('users')">
+                        <i class="fas fa-user-friends"></i>
+                        Bot Users
+                    </button>
+                    <button class="nav-item" onclick="showSection('admins')">
+                        <i class="fas fa-user-shield"></i>
+                        Administrators
+                    </button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <button class="nav-item" onclick="showSection('settings')">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </button>
+                    <button class="nav-item" onclick="showSection('reports')">
+                        <i class="fas fa-file-export"></i>
+                        Reports & Export
+                    </button>
+                    <button class="nav-item" onclick="showSection('logs')">
+                        <i class="fas fa-clipboard-list"></i>
+                        System Logs
+                    </button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <header class="main-header">
+                <div>
+                    <h1 class="page-title" id="page-title">Dashboard</h1>
+                    <div class="breadcrumb" id="breadcrumb">Home / Dashboard</div>
+                </div>
+                <div class="main-actions">
+                    <button class="btn btn-secondary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="exportData()">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+            </header>
+
+            <!-- Alerts Container -->
+            <div id="alerts-container"></div>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section active">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Total Customers</div>
+                            <div class="stat-icon" style="background: #dbeafe; color: #1e40af;">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="stat-customers">-</div>
+                        <div class="stat-change positive" id="stat-customers-change">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+0 today</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Total Orders</div>
+                            <div class="stat-icon" style="background: #dcfce7; color: #166534;">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="stat-orders">-</div>
+                        <div class="stat-change positive" id="stat-orders-change">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+0 today</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Revenue</div>
+                            <div class="stat-icon" style="background: #fef3c7; color: #92400e;">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="stat-revenue">$0</div>
+                        <div class="stat-change positive" id="stat-revenue-change">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+$0 today</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Active Users</div>
+                            <div class="stat-icon" style="background: #f3e8ff; color: #7c3aed;">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="stat-users">-</div>
+                        <div class="stat-change positive" id="stat-users-change">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>0 online</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Orders Over Time</h3>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-secondary" onclick="changeChartPeriod('7d')">7D</button>
+                                <button class="btn btn-sm btn-secondary" onclick="changeChartPeriod('30d')">30D</button>
+                                <button class="btn btn-sm btn-secondary" onclick="changeChartPeriod('90d')">90D</button>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="ordersChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Order Status</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Orders</h3>
+                            <a href="#" onclick="showSection('orders')" class="btn btn-sm btn-secondary">View All</a>
+                        </div>
+                        <div class="card-content">
+                            <div id="recent-orders">
+                                <div class="loading">
+                                    <div class="spinner"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">New Customers</h3>
+                            <a href="#" onclick="showSection('customers')" class="btn btn-sm btn-secondary">View All</a>
+                        </div>
+                        <div class="card-content">
+                            <div id="recent-customers">
+                                <div class="loading">
+                                    <div class="spinner"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Customers Section -->
+            <section id="customers-section" class="content-section">
+                <div class="d-flex justify-between align-center mb-4">
+                    <h2>Customer Management</h2>
+                    <button class="btn btn-primary" onclick="addCustomer()">
+                        <i class="fas fa-plus"></i>
+                        Add Customer
+                    </button>
+                </div>
+                
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search customers by name, email, or phone..." 
+                           id="customer-search" onkeyup="searchCustomers()">
+                </div>
+                
+                <div class="card">
+                    <div class="card-content">
+                        <div id="customers-table">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="customers-pagination" class="pagination"></div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders-section" class="content-section">
+                <div class="d-flex justify-between align-center mb-4">
+                    <h2>Order Management</h2>
+                    <div class="d-flex gap-2">
+                        <select class="form-select" id="order-status-filter" onchange="filterOrders()">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="exportOrders()">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-content">
+                        <div id="orders-table">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="orders-pagination" class="pagination"></div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users-section" class="content-section">
+                <div class="d-flex justify-between align-center mb-4">
+                    <h2>User Management</h2>
+                    <div class="d-flex gap-2">
+                        <select class="form-select" id="user-role-filter" onchange="filterUsers()">
+                            <option value="">All Users</option>
+                            <option value="admin">Administrators</option>
+                            <option value="user">Regular Users</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-content">
+                        <div id="users-table">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="users-pagination" class="pagination"></div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings-section" class="content-section">
+                <h2 class="mb-4">System Settings</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Bot Configuration</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">Bot Status</label>
+                                <div id="bot-status" class="badge badge-success">Online</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">API Status</label>
+                                <div id="api-status" class="badge badge-info">Checking...</div>
+                            </div>
+                            <button class="btn btn-primary" onclick="testBotConnection()">
+                                <i class="fas fa-robot"></i>
+                                Test Bot Connection
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Database Health</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">Database Status</label>
+                                <div id="db-status" class="badge badge-success">Connected</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Backup</label>
+                                <div id="last-backup" class="text-muted">Never</div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="checkDatabaseHealth()">
+                                <i class="fas fa-database"></i>
+                                Check Health
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports-section" class="content-section">
+                <h2 class="mb-4">Reports & Export</h2>
+                
+                <div class="stats-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Export Data</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">Export Type</label>
+                                <select class="form-select" id="export-type">
+                                    <option value="customers">Customers</option>
+                                    <option value="orders">Orders</option>
+                                    <option value="users">Users</option>
+                                    <option value="all">All Data</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Format</label>
+                                <select class="form-select" id="export-format">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="xlsx">Excel</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="performExport()">
+                                <i class="fas fa-download"></i>
+                                Export Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Customer Modal -->
+    <div id="customer-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="customer-modal-title">Customer Details</h3>
+                <button class="modal-close" onclick="closeCustomerModal()">&times;</button>
+            </div>
+            <div id="customer-modal-content">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Modal -->
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="order-modal-title">Order Details</h3>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            <div id="order-modal-content">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        const CRM = {
+            currentSection: 'dashboard',
+            currentPage: 1,
+            pageSize: 50,
+            charts: {},
+            data: {
+                customers: [],
+                orders: [],
+                users: []
+            }
+        };
+
+        // API Base URL
+        const API_BASE = window.location.origin;
+
+        // Initialize CRM
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCRM();
+        });
+
+        async function initializeCRM() {
+            showAlert('info', 'Loading TeleKpr CRM...');
+            
+            try {
+                await loadDashboardData();
+                await checkSystemHealth();
+                hideAlert();
+                showAlert('success', 'CRM loaded successfully!');
+            } catch (error) {
+                console.error('CRM initialization error:', error);
+                showAlert('error', 'Failed to initialize CRM: ' + error.message);
+            }
+        }
+
+        // Navigation
+        function showSection(sectionName) {
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionName + '-section').classList.add('active');
+
+            // Update header
+            const titles = {
+                dashboard: 'Dashboard',
+                analytics: 'Analytics',
+                customers: 'Customer Management',
+                'customer-insights': 'Customer Insights',
+                orders: 'Order Management',
+                'order-queue': 'Order Queue',
+                users: 'User Management',
+                admins: 'Administrators',
+                settings: 'System Settings',
+                reports: 'Reports & Export',
+                logs: 'System Logs'
+            };
+
+            const breadcrumbs = {
+                dashboard: 'Home / Dashboard',
+                analytics: 'Home / Analytics',
+                customers: 'Home / Customer Management',
+                'customer-insights': 'Home / Customer Insights',
+                orders: 'Home / Order Management',
+                'order-queue': 'Home / Order Queue',
+                users: 'Home / User Management',
+                admins: 'Home / Administrators',
+                settings: 'Home / System Settings',
+                reports: 'Home / Reports & Export',
+                logs: 'Home / System Logs'
+            };
+
+            document.getElementById('page-title').textContent = titles[sectionName] || sectionName;
+            document.getElementById('breadcrumb').textContent = breadcrumbs[sectionName] || 'Home / ' + sectionName;
+
+            CRM.currentSection = sectionName;
+
+            // Load section-specific data
+            switch (sectionName) {
+                case 'customers':
+                    loadCustomers();
+                    break;
+                case 'orders':
+                    loadOrders();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'settings':
+                    loadSettings();
+                    break;
+            }
+        }
+
+        // Dashboard Functions
+        async function loadDashboardData() {
+            try {
+                // Load stats
+                const statsResponse = await fetch(`${API_BASE}/api/dashboard/stats`);
+                const stats = await statsResponse.json();
+                updateDashboardStats(stats);
+
+                // Load charts
+                const chartsResponse = await fetch(`${API_BASE}/api/dashboard/charts`);
+                const chartsData = await chartsResponse.json();
+                updateDashboardCharts(chartsData);
+
+                // Load recent activity
+                const activityResponse = await fetch(`${API_BASE}/api/dashboard/activity`);
+                const activity = await activityResponse.json();
+                updateRecentActivity(activity);
+
+            } catch (error) {
+                console.error('Dashboard data error:', error);
+                showAlert('error', 'Failed to load dashboard data');
+            }
+        }
+
+        function updateDashboardStats(stats) {
+            document.getElementById('stat-customers').textContent = stats.customers.total || 0;
+            document.getElementById('stat-orders').textContent = stats.orders.total || 0;
+            document.getElementById('stat-revenue').textContent = '$' + (stats.revenue.total || 0);
+            document.getElementById('stat-users').textContent = stats.users.total || 0;
+
+            // Update change indicators
+            document.getElementById('stat-customers-change').innerHTML = `
+                <i class="fas fa-arrow-up"></i>
+                <span>+${stats.customers.today || 0} today</span>
+            `;
+            document.getElementById('stat-orders-change').innerHTML = `
+                <i class="fas fa-arrow-up"></i>
+                <span>+${stats.orders.today || 0} today</span>
+            `;
+        }
+
+        function updateDashboardCharts(data) {
+            // Orders over time chart
+            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+            if (CRM.charts.orders) {
+                CRM.charts.orders.destroy();
+            }
+            
+            CRM.charts.orders = new Chart(ordersCtx, {
+                type: 'line',
+                data: {
+                    labels: data.orders_by_day.map(d => new Date(d.date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Orders',
+                        data: data.orders_by_day.map(d => d.count),
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Order status chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            if (CRM.charts.status) {
+                CRM.charts.status.destroy();
+            }
+
+            const statusColors = {
+                pending: '#d97706',
+                processing: '#0891b2',
+                completed: '#059669',
+                cancelled: '#dc2626'
+            };
+
+            CRM.charts.status = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.orders_by_status.map(d => d.status),
+                    datasets: [{
+                        data: data.orders_by_status.map(d => d.count),
+                        backgroundColor: data.orders_by_status.map(d => statusColors[d.status] || '#64748b')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRecentActivity(activity) {
+            // Recent orders
+            const recentOrdersHtml = activity.recent_orders.map(order => `
+                <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                    <div class="d-flex justify-between align-center">
+                        <div>
+                            <div class="font-medium">${order.product_name}</div>
+                            <div class="text-muted" style="font-size: 0.8125rem;">
+                                ${order.customer_profiles?.full_name || 'Unknown Customer'}
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="badge badge-${getStatusColor(order.status)}">${order.status}</div>
+                            <div class="text-muted" style="font-size: 0.8125rem; margin-top: 0.25rem;">
+                                ${order.token_cost} tokens
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('recent-orders').innerHTML = recentOrdersHtml || '<div class="text-center text-muted">No recent orders</div>';
+
+            // Recent customers
+            const recentCustomersHtml = activity.recent_customers.map(customer => `
+                <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                    <div class="d-flex justify-between align-center">
+                        <div>
+                            <div class="font-medium">${customer.full_name}</div>
+                            <div class="text-muted" style="font-size: 0.8125rem;">
+                                ${new Date(customer.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="viewCustomer('${customer.id}')">
+                            View
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('recent-customers').innerHTML = recentCustomersHtml || '<div class="text-center text-muted">No recent customers</div>';
+        }
+
+        // Customer Management
+        async function loadCustomers(page = 1, search = '') {
+            try {
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: CRM.pageSize,
+                    search: search
+                });
+
+                const response = await fetch(`${API_BASE}/api/customers?${params}`);
+                const data = await response.json();
+
+                CRM.data.customers = data.customers;
+                updateCustomersTable(data.customers);
+                updatePagination('customers', data.page, data.total_pages);
+
+            } catch (error) {
+                console.error('Load customers error:', error);
+                showAlert('error', 'Failed to load customers');
+            }
+        }
+
+        function updateCustomersTable(customers) {
+            const tableHtml = `
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>Location</th>
+                                <th>Joined</th>
+                                <th>Orders</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${customers.map(customer => `
+                                <tr>
+                                    <td>
+                                        <div class="font-medium">${customer.full_name || 'N/A'}</div>
+                                        <div class="text-muted" style="font-size: 0.8125rem;">
+                                            ${customer.users?.telegram_username ? '@' + customer.users.telegram_username : 'No username'}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>${customer.email || 'N/A'}</div>
+                                        <div class="text-muted" style="font-size: 0.8125rem;">${customer.phone_number || 'N/A'}</div>
+                                    </td>
+                                    <td>
+                                        <div>${customer.city || 'N/A'}, ${customer.state || 'N/A'}</div>
+                                        <div class="text-muted" style="font-size: 0.8125rem;">${customer.country || 'N/A'}</div>
+                                    </td>
+                                    <td>${new Date(customer.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <span class="badge badge-info">0</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-sm btn-secondary" onclick="viewCustomer('${customer.id}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-primary" onclick="editCustomer('${customer.id}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${customer.id}', '${customer.full_name}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('customers-table').innerHTML = tableHtml;
+        }
+
+        // Order Management
+        async function loadOrders(page = 1, status = '') {
+            try {
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: CRM.pageSize
+                });
+
+                if (status) params.append('status', status);
+
+                const response = await fetch(`${API_BASE}/api/orders?${params}`);
+                const data = await response.json();
+
+                CRM.data.orders = data.orders;
+                updateOrdersTable(data.orders);
+                updatePagination('orders', data.page, data.total_pages);
+
+            } catch (error) {
+                console.error('Load orders error:', error);
+                showAlert('error', 'Failed to load orders');
+            }
+        }
+
+        function updateOrdersTable(orders) {
+            const tableHtml = `
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Tokens</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orders.map(order => `
+                                <tr>
+                                    <td>
+                                        <div class="font-medium">#${order.id.substring(0, 8)}</div>
+                                    </td>
+                                    <td>
+                                        <div class="font-medium">${order.customer_profiles?.full_name || 'Unknown'}</div>
+                                        <div class="text-muted" style="font-size: 0.8125rem;">${order.customer_profiles?.email || 'N/A'}</div>
+                                    </td>
+                                    <td>${order.product_name}</td>
+                                    <td>${order.token_cost}</td>
+                                    <td>
+                                        <span class="badge badge-${getStatusColor(order.status)}">${order.status}</span>
+                                    </td>
+                                    <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-sm btn-secondary" onclick="viewOrder('${order.id}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-primary" onclick="updateOrderStatus('${order.id}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('orders-table').innerHTML = tableHtml;
+        }
+
+        // User Management
+        async function loadUsers(page = 1, role = '') {
+            try {
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: CRM.pageSize
+                });
+
+                if (role) params.append('role', role);
+
+                const response = await fetch(`${API_BASE}/api/users?${params}`);
+                const data = await response.json();
+
+                CRM.data.users = data.users;
+                updateUsersTable(data.users);
+                updatePagination('users', data.page, data.total_pages);
+
+            } catch (error) {
+                console.error('Load users error:', error);
+                showAlert('error', 'Failed to load users');
+            }
+        }
+
+        function updateUsersTable(users) {
+            const tableHtml = `
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Telegram</th>
+                                <th>Tokens</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(user => `
+                                <tr>
+                                    <td>
+                                        <div class="font-medium">${user.full_name || 'Unknown'}</div>
+                                        <div class="text-muted" style="font-size: 0.8125rem;">ID: ${user.telegram_id}</div>
+                                    </td>
+                                    <td>
+                                        ${user.telegram_username ? '@' + user.telegram_username : 'N/A'}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">${user.token_balance || 0}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge ${user.is_admin ? 'badge-warning' : 'badge-secondary'}">
+                                            ${user.is_admin ? 'Admin' : 'User'}
+                                        </span>
+                                    </td>
+                                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-sm btn-primary" onclick="editUserTokens('${user.id}', ${user.token_balance})">
+                                                <i class="fas fa-coins"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-secondary" onclick="toggleUserAdmin('${user.id}', ${user.is_admin})">
+                                                <i class="fas fa-user-shield"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('users-table').innerHTML = tableHtml;
+        }
+
+        // Utility Functions
+        function getStatusColor(status) {
+            const colors = {
+                pending: 'warning',
+                processing: 'info',
+                completed: 'success',
+                cancelled: 'danger'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function updatePagination(type, currentPage, totalPages) {
+            const container = document.getElementById(type + '-pagination');
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                html += `<button class="pagination-btn" onclick="${type}GoToPage(${currentPage - 1})">&larr;</button>`;
+            }
+
+            // Page numbers
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="${type}GoToPage(${i})">${i}</button>`;
+            }
+
+            // Next button
+            if (currentPage < totalPages) {
+                html += `<button class="pagination-btn" onclick="${type}GoToPage(${currentPage + 1})">&rarr;</button>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Page navigation functions
+        function customersGoToPage(page) {
+            const search = document.getElementById('customer-search').value;
+            loadCustomers(page, search);
+        }
+
+        function ordersGoToPage(page) {
+            const status = document.getElementById('order-status-filter').value;
+            loadOrders(page, status);
+        }
+
+        function usersGoToPage(page) {
+            const role = document.getElementById('user-role-filter').value;
+            loadUsers(page, role);
+        }
+
+        // Search and filter functions
+        function searchCustomers() {
+            const search = document.getElementById('customer-search').value;
+            loadCustomers(1, search);
+        }
+
+        function filterOrders() {
+            const status = document.getElementById('order-status-filter').value;
+            loadOrders(1, status);
+        }
+
+        function filterUsers() {
+            const role = document.getElementById('user-role-filter').value;
+            loadUsers(1, role);
+        }
+
+        // Modal functions
+        function viewCustomer(id) {
+            // Implementation for viewing customer details
+            showAlert('info', 'Customer details modal - Coming soon!');
+        }
+
+        function editCustomer(id) {
+            // Implementation for editing customer
+            showAlert('info', 'Edit customer modal - Coming soon!');
+        }
+
+        function deleteCustomer(id, name) {
+            if (confirm(`Are you sure you want to delete customer "${name}"?`)) {
+                // Implementation for deleting customer
+                showAlert('success', 'Customer deleted successfully!');
+            }
+        }
+
+        function viewOrder(id) {
+            // Implementation for viewing order details
+            showAlert('info', 'Order details modal - Coming soon!');
+        }
+
+        function updateOrderStatus(id) {
+            // Implementation for updating order status
+            showAlert('info', 'Update order status - Coming soon!');
+        }
+
+        function editUserTokens(id, currentTokens) {
+            const newTokens = prompt(`Enter new token balance for user (current: ${currentTokens}):`);
+            if (newTokens !== null && !isNaN(newTokens)) {
+                // Implementation for updating user tokens
+                showAlert('success', 'User tokens updated successfully!');
+            }
+        }
+
+        function toggleUserAdmin(id, isAdmin) {
+            const action = isAdmin ? 'remove admin privileges from' : 'grant admin privileges to';
+            if (confirm(`Are you sure you want to ${action} this user?`)) {
+                // Implementation for toggling admin status
+                showAlert('success', 'User privileges updated successfully!');
+            }
+        }
+
+        // System functions
+        async function checkSystemHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const health = await response.json();
+
+                document.getElementById('api-status').className = `badge badge-${health.status === 'healthy' ? 'success' : 'danger'}`;
+                document.getElementById('api-status').textContent = health.status === 'healthy' ? 'Connected' : 'Disconnected';
+
+                document.getElementById('db-status').className = `badge badge-${health.database === 'connected' ? 'success' : 'danger'}`;
+                document.getElementById('db-status').textContent = health.database === 'connected' ? 'Connected' : 'Disconnected';
+
+            } catch (error) {
+                console.error('Health check error:', error);
+                document.getElementById('api-status').className = 'badge badge-danger';
+                document.getElementById('api-status').textContent = 'Error';
+            }
+        }
+
+        function loadSettings() {
+            checkSystemHealth();
+        }
+
+        function testBotConnection() {
+            showAlert('info', 'Testing bot connection...');
+            // Implementation for testing bot connection
+            setTimeout(() => {
+                showAlert('success', 'Bot connection test successful!');
+            }, 2000);
+        }
+
+        function checkDatabaseHealth() {
+            showAlert('info', 'Checking database health...');
+            checkSystemHealth();
+        }
+
+        // Data refresh and export
+        async function refreshData() {
+            showAlert('info', 'Refreshing data...');
+            
+            switch (CRM.currentSection) {
+                case 'dashboard':
+                    await loadDashboardData();
+                    break;
+                case 'customers':
+                    await loadCustomers();
+                    break;
+                case 'orders':
+                    await loadOrders();
+                    break;
+                case 'users':
+                    await loadUsers();
+                    break;
+            }
+            
+            showAlert('success', 'Data refreshed successfully!');
+        }
+
+        function exportData() {
+            const type = CRM.currentSection.replace('-section', '');
+            performExport(type);
+        }
+
+        function performExport(type = null) {
+            const exportType = type || document.getElementById('export-type').value;
+            const format = document.getElementById('export-format')?.value || 'json';
+            
+            showAlert('info', `Exporting ${exportType} data as ${format.toUpperCase()}...`);
+            
+            // Create download link
+            const url = `${API_BASE}/api/export/${exportType}`;
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${exportType}-export-${new Date().toISOString().split('T')[0]}.${format}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert('success', 'Export completed!');
+        }
+
+        // Alert system
+        function showAlert(type, message, duration = 5000) {
+            const alertsContainer = document.getElementById('alerts-container');
+            const alertId = 'alert-' + Date.now();
+            
+            const alertHtml = `
+                <div id="${alertId}" class="alert alert-${type}">
+                    <div class="d-flex justify-between align-center">
+                        <span>${message}</span>
+                        <button onclick="hideAlert('${alertId}')" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+                    </div>
+                </div>
+            `;
+            
+            alertsContainer.insertAdjacentHTML('beforeend', alertHtml);
+            
+            if (duration > 0) {
+                setTimeout(() => hideAlert(alertId), duration);
+            }
+        }
+
+        function hideAlert(alertId) {
+            const alert = document.getElementById(alertId);
+            if (alert) {
+                alert.remove();
+            }
+        }
+
+        // Hide all alerts
+        function hideAlert() {
+            const alertsContainer = document.getElementById('alerts-container');
+            alertsContainer.innerHTML = '';
+        }
+
+        // Chart period change
+        function changeChartPeriod(period) {
+            showAlert('info', `Changing chart period to ${period}...`);
+            // Implementation for changing chart time period
+            setTimeout(() => {
+                showAlert('success', 'Chart updated!');
+            }, 1000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        refreshData();
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        exportData();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

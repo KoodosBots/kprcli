@@ -1,0 +1,2734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleKpr CRM - Enhanced Admin Dashboard</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    
+    <style>
+        /* Enhanced CRM Styling with Light/Dark Mode */
+        :root {
+            /* Light mode colors */
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #64748b;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --info-color: #0891b2;
+            
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark mode colors */
+            --bg-primary: #1e293b;
+            --bg-secondary: #0f172a;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --border-color: #374151;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .crm-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Enhanced Sidebar */
+        .sidebar {
+            width: 220px; /* Reduced from 280px */
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: width 0.3s ease, transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+            overflow-x: hidden;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .sidebar-title .title-text {
+            display: none;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar-toggle:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.collapsed .nav-section-title {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 0.75rem;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 0.75rem 0.5rem;
+        }
+
+        .sidebar.collapsed .nav-item span {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-item i {
+            margin-right: 0;
+        }
+
+        /* Header Controls */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+
+        .theme-toggle, .logout-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .theme-toggle:hover, .logout-btn:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .logout-btn {
+            background-color: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+
+        .logout-btn:hover {
+            background-color: #b91c1c;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 220px;
+            padding: 1rem;
+            transition: margin-left 0.3s ease;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 60px;
+        }
+
+        .main-header {
+            background: var(--bg-primary);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.125rem;
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Enhanced Cards */
+        .card {
+            background: var(--bg-primary);
+            border-radius: 0.375rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-content {
+            padding: 1rem;
+        }
+
+        /* Ultra-Compact Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.1rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-change {
+            font-size: 0.65rem;
+            margin-top: 0.1rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+
+        .stat-change.negative {
+            color: var(--danger-color);
+        }
+
+        /* Enhanced Tables */
+        .table-container {
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        /* Enhanced Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+            border-color: var(--warning-color);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        /* Enhanced Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Token Controls */
+        .token-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .token-input {
+            width: 100px;
+            text-align: center;
+        }
+
+        .token-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-pending {
+            background-color: rgba(251, 191, 36, 0.1);
+            color: #d97706;
+        }
+
+        .status-processing {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        .status-completed {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: #059669;
+        }
+
+        .status-cancelled {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            padding: 1rem 1.5rem;
+            max-width: 400px;
+            z-index: 3000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--info-color);
+        }
+
+        /* Log Terminal */
+        .log-terminal {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .log-terminal::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-terminal::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
+        .log-terminal::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        .log-line {
+            margin-bottom: 0.25rem;
+        }
+
+        .log-timestamp {
+            color: #888;
+        }
+
+        .log-level-error {
+            color: #ff4444;
+        }
+
+        .log-level-warn {
+            color: #ffaa00;
+        }
+
+        .log-level-info {
+            color: #44aaff;
+        }
+
+        /* PROPER Mobile Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+                overflow-x: hidden;
+            }
+
+            /* Hide desktop sidebar completely on mobile */
+            .sidebar {
+                display: none;
+            }
+
+            /* Mobile main content - no scrolling */
+            .main-content {
+                margin-left: 0 !important;
+                padding: 0.25rem !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                overflow: hidden !important;
+                box-sizing: border-box;
+            }
+
+            /* Ultra-compact mobile header */
+            .main-header {
+                padding: 0.5rem !important;
+                margin-bottom: 0.25rem !important;
+                flex-direction: row !important;
+                gap: 0.5rem;
+                text-align: left;
+                min-height: 50px;
+            }
+
+            .page-title {
+                font-size: 1.25rem !important;
+                margin: 0;
+            }
+
+            .breadcrumb {
+                font-size: 0.75rem !important;
+            }
+
+            .header-controls {
+                justify-content: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+
+            .theme-toggle, .logout-btn {
+                padding: 0.5rem 1rem !important;
+                font-size: 0.85rem !important;
+            }
+
+            /* Ultra-compact mobile stats - 4 columns */
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 0.1rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+
+            .stat-card {
+                padding: 0.75rem 0.5rem !important;
+                text-align: center;
+            }
+
+            .stat-value {
+                font-size: 1.5rem !important;
+                margin-bottom: 0.25rem;
+            }
+
+            .stat-label {
+                font-size: 0.7rem !important;
+                line-height: 1.2;
+            }
+
+            .stat-change {
+                font-size: 0.65rem !important;
+                margin-top: 0.25rem;
+            }
+
+            /* Mobile 5-card layout - stack into 2 columns */
+            #dashboard-section > div:nth-child(2) {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 0.15rem !important;
+                height: calc(100vh - 120px) !important;
+                overflow-y: auto !important;
+            }
+
+            /* All cards on mobile get equal treatment */
+            #dashboard-section .card {
+                grid-column: unset !important;
+            }
+
+            /* Mobile card content much smaller */
+            #dashboard-section .card .card-content > div {
+                height: 80px !important;
+            }
+
+            /* Ultra-compact mobile cards */
+            .card {
+                margin-bottom: 0.15rem !important;
+                border-radius: 0.375rem;
+                flex: 1;
+                overflow: hidden;
+            }
+
+            .card-header {
+                padding: 0.25rem !important;
+                flex-direction: row !important;
+                gap: 0.25rem;
+                text-align: left;
+                min-height: auto;
+            }
+
+            .card-title {
+                font-size: 0.8rem !important;
+                margin: 0;
+            }
+
+            .card-content {
+                padding: 0.25rem !important;
+            }
+
+            /* Mobile chart containers */
+            .card-content > div {
+                height: 250px !important;
+            }
+
+            #recent-orders, #new-customers {
+                height: 60px !important;
+                overflow-y: auto;
+                font-size: 0.65rem !important;
+            }
+
+            /* Mobile chart containers - all very compact */
+            .card-content > div {
+                height: 60px !important;
+            }
+
+            /* Order Status chart on mobile - smaller */
+            #statusChart {
+                height: 70px !important;
+            }
+
+            /* Prevent all scrolling on mobile only */
+            @media (max-width: 768px) {
+                html, body {
+                    overflow: hidden !important;
+                    height: 100vh !important;
+                }
+            }
+
+            /* Mobile stats super compact */
+            .stat-card {
+                padding: 0.25rem !important;
+            }
+
+            .stat-value {
+                font-size: 0.9rem !important;
+            }
+
+            .stat-label {
+                font-size: 0.6rem !important;
+            }
+
+            /* Mobile buttons */
+            .btn {
+                padding: 0.5rem 1rem !important;
+                font-size: 0.85rem !important;
+                border-radius: 0.375rem;
+            }
+
+            .btn-sm {
+                padding: 0.375rem 0.75rem !important;
+                font-size: 0.75rem !important;
+            }
+
+            /* Mobile tables */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: -0.75rem;
+                padding: 0.75rem;
+            }
+
+            .table {
+                min-width: 600px;
+            }
+
+            .table th, .table td {
+                padding: 0.75rem 0.5rem !important;
+                font-size: 0.85rem !important;
+                white-space: nowrap;
+            }
+
+            .table th {
+                font-size: 0.8rem !important;
+                padding: 0.5rem !important;
+            }
+
+            /* Mobile modals */
+            .modal-content {
+                width: 95vw !important;
+                max-width: none !important;
+                margin: 1rem auto !important;
+                max-height: 90vh !important;
+            }
+
+            .modal-header, .modal-body, .modal-footer {
+                padding: 1rem !important;
+            }
+
+            /* Mobile forms */
+            .form-input, .form-select, .form-textarea {
+                padding: 0.75rem !important;
+                font-size: 1rem !important;
+            }
+
+            /* Mobile notifications */
+            .notification {
+                top: 1rem !important;
+                right: 1rem !important;
+                left: 1rem !important;
+                max-width: none !important;
+                transform: translateY(-100%);
+            }
+
+            .notification.show {
+                transform: translateY(0);
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .main-content {
+                padding: 1rem !important;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 1rem !important;
+            }
+
+            .card-content {
+                padding: 0.75rem !important;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="crm-container">
+        <!-- Enhanced Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">
+                    <i class="fas fa-rocket"></i>
+                    <span class="title-text">TeleKpr CRM</span>
+                </h1>
+                <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Overview</div>
+                    <button class="nav-item active" onclick="showSection('dashboard')">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Management</div>
+                    <button class="nav-item" onclick="showSection('customers')">
+                        <i class="fas fa-users"></i>
+                        <span>Customers</span>
+                    </button>
+                    <button class="nav-item" onclick="showSection('orders')">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Orders</span>
+                    </button>
+                    <button class="nav-item" onclick="showSection('users')">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Users</span>
+                    </button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <button class="nav-item" onclick="showSection('logs')">
+                        <i class="fas fa-terminal"></i>
+                        <span>Live Logs</span>
+                    </button>
+                    <button class="nav-item" onclick="showSection('settings')">
+                        <i class="fas fa-cogs"></i>
+                        <span>Settings</span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Enhanced Header -->
+            <header class="main-header">
+                <div>
+                    <h1 class="page-title" id="page-title">Dashboard</h1>
+                    <div class="breadcrumb" id="breadcrumb">Home / Dashboard</div>
+                </div>
+                <div class="header-controls">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                        <span id="theme-text">Dark Mode</span>
+                    </button>
+                    <button class="logout-btn" onclick="logout()" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <div class="content-section active" id="dashboard-section">
+                <div class="stats-grid" id="stats-grid">
+                    <!-- Stats will be loaded here -->
+                </div>
+                
+                <!-- 5-Card Grid Layout -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                    
+                    <!-- Card 1: Orders Over Time (spans 2 columns) -->
+                    <div class="card" style="grid-column: span 2;">
+                        <div class="card-header">
+                            <h3 class="card-title">Orders Over Time</h3>
+                            <button class="btn btn-outline btn-sm" onclick="refreshDashboard()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <div style="height: 200px;">
+                                <canvas id="ordersChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 2: Order Status -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Order Status</h3>
+                        </div>
+                        <div class="card-content">
+                            <div style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 3: Recent Orders -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Orders</h3>
+                        </div>
+                        <div class="card-content">
+                            <div id="recent-orders" style="height: 200px; overflow-y: auto; font-size: 0.8rem;">
+                                <!-- Recent orders -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 4: New Customers -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">New Customers</h3>
+                        </div>
+                        <div class="card-content">
+                            <div id="new-customers" style="height: 200px; overflow-y: auto; font-size: 0.8rem;">
+                                <!-- New customers -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 5: System Health -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">System Health</h3>
+                        </div>
+                        <div class="card-content">
+                            <div style="height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1rem;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; color: var(--success-color);">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div style="font-weight: 600; color: var(--success-color);">All Systems Online</div>
+                                </div>
+                                <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+                                    <div>Database: ✅</div>
+                                    <div>Telegram: ✅</div>
+                                    <div>API: ✅</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- Customers Section -->
+            <div class="content-section" id="customers-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Customer Management</h3>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <input type="text" class="form-input" placeholder="Search customers..." id="customer-search" style="width: 250px;">
+                            <button class="btn btn-primary" onclick="loadCustomers()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="table-container">
+                            <table class="table" id="customers-table">
+                                <thead>
+                                    <tr>
+                                        <th>👤 First Name</th>
+                                        <th>👤 Middle Name</th>
+                                        <th>👤 Last Name</th>
+                                        <th>📞 Phone</th>
+                                        <th>📧 Email</th>
+                                        <th>🎂 Gender</th>
+                                        <th>📅 DOB</th>
+                                        <th>📍 Address</th>
+                                        <th>🏙️ City</th>
+                                        <th>🗺️ State</th>
+                                        <th>📮 Postal</th>
+                                        <th>🌍 Country</th>
+                                        <th>💬 Telegram User</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customers-tbody">
+                                    <!-- Customer data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div class="content-section" id="orders-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Active Orders</h3>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <select class="form-select" id="order-status-filter" style="width: 150px;">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="loadOrders()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="table-container">
+                            <table class="table" id="orders-table">
+                                <thead>
+                                    <tr>
+                                        <th>📦 Order ID</th>
+                                        <th>👤 First Name</th>
+                                        <th>👤 Middle Name</th>
+                                        <th>👤 Last Name</th>
+                                        <th>📞 Phone</th>
+                                        <th>📧 Email</th>
+                                        <th>📍 Address</th>
+                                        <th>🏙️ City</th>
+                                        <th>🗺️ State</th>
+                                        <th>💬 Telegram</th>
+                                        <th>🛍️ Product</th>
+                                        <th>💰 Amount</th>
+                                        <th>📈 Status</th>
+                                        <th>📅 Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-tbody">
+                                    <!-- Order data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div class="content-section" id="users-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">User Management</h3>
+                        <button class="btn btn-primary" onclick="loadUsers()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <div class="table-container">
+                            <table class="table" id="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Telegram</th>
+                                        <th>Token Balance</th>
+                                        <th>Admin</th>
+                                        <th>Last Seen</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-tbody">
+                                    <!-- User data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Logs Section -->
+            <div class="content-section" id="logs-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Live Bot Logs</h3>
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <select class="form-select" id="log-type" style="width: 150px;">
+                                <option value="combined">Combined</option>
+                                <option value="bot">Bot Only</option>
+                                <option value="error">Errors Only</option>
+                            </select>
+                            <button class="btn btn-success" onclick="startLogStream()" id="log-stream-btn">
+                                <i class="fas fa-play"></i>
+                                Start Stream
+                            </button>
+                            <button class="btn btn-outline" onclick="clearLogs()">
+                                <i class="fas fa-trash"></i>
+                                Clear
+                            </button>
+                            <span id="log-status" class="text-muted"></span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="log-terminal" id="log-terminal">
+                            <div class="log-line">Waiting for log stream...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="content-section" id="settings-section">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">System Status</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">API Health</label>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span id="api-status" class="status-badge">Checking...</span>
+                                    <button class="btn btn-sm btn-outline" onclick="checkAPIHealth()">
+                                        <i class="fas fa-heartbeat"></i>
+                                        Check
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Database Connection</label>
+                                <span id="db-status" class="status-badge">Unknown</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">WebSocket Status</label>
+                                <span id="ws-status" class="status-badge">Disconnected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Telegram Notifications</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">Telegram Service Status</label>
+                                <span id="telegram-status" class="status-badge">Checking...</span>
+                                <button class="btn btn-sm btn-outline" onclick="checkTelegramStatus()" style="margin-left: 0.5rem;">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Check
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Test Notifications</label>
+                                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <button class="btn btn-sm btn-outline" onclick="testTelegramNotification('basic')">
+                                        📢 Basic Test
+                                    </button>
+                                    <button class="btn btn-sm btn-outline" onclick="testTelegramNotification('token')">
+                                        💰 Token Test
+                                    </button>
+                                    <button class="btn btn-sm btn-outline" onclick="testTelegramNotification('order')">
+                                        📦 Order Test
+                                    </button>
+                                </div>
+                                <small style="color: var(--text-muted); margin-top: 0.5rem; display: block;">
+                                    Note: Tests will be sent to the first user with a Telegram ID
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Data Export</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">Export Type</label>
+                                <select class="form-select" id="export-type">
+                                    <option value="customers">Customers</option>
+                                    <option value="orders">Orders</option>
+                                    <option value="users">Users</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="exportData()">
+                                <i class="fas fa-download"></i>
+                                Export Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Order Details Modal -->
+    <div class="modal" id="order-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Order Details</h3>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="order-modal-body">
+                <!-- Order details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeOrderModal()">Close</button>
+                <button class="btn btn-primary" onclick="saveOrderChanges()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Details Modal -->
+    <div class="modal" id="customer-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Customer Details</h3>
+                <button class="modal-close" onclick="closeCustomerModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="customer-modal-body">
+                <!-- Customer details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeCustomerModal()">Close</button>
+                <button class="btn btn-primary" onclick="saveCustomerChanges()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced CRM JavaScript
+        const API_BASE = window.location.origin;
+        let socket = null;
+        let currentSection = 'dashboard';
+        let currentOrder = null;
+        let currentCustomer = null;
+        let logStreamActive = false;
+        let ordersChart = null;
+        let statusChart = null;
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Enhanced TeleKpr CRM Loading...');
+            
+            // Load theme from localStorage
+            const savedTheme = localStorage.getItem('crm-theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeUI(savedTheme);
+            
+            // Initialize WebSocket
+            initializeWebSocket();
+            
+            // Load initial data
+            loadDashboard();
+            checkAPIHealth();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            console.log('✅ CRM Initialized');
+        });
+
+        // WebSocket Management
+        function initializeWebSocket() {
+            try {
+                socket = io();
+                
+                socket.on('connect', () => {
+                    console.log('🔌 WebSocket connected');
+                    updateWebSocketStatus('Connected', 'success');
+                    socket.emit('join_logs');
+                });
+                
+                socket.on('disconnect', () => {
+                    console.log('🔌 WebSocket disconnected');
+                    updateWebSocketStatus('Disconnected', 'error');
+                });
+                
+                socket.on('log_update', (data) => {
+                    if (logStreamActive) {
+                        appendLogs(data.lines);
+                    }
+                });
+                
+                socket.on('order_updated', (data) => {
+                    showNotification(`Order ${data.order.id} ${data.action}`, 'success');
+                    if (currentSection === 'orders') {
+                        loadOrders();
+                    }
+                });
+                
+                socket.on('user_updated', (data) => {
+                    showNotification(`User ${data.user.telegram_username || data.user.id} updated`, 'success');
+                    if (currentSection === 'users') {
+                        loadUsers();
+                    }
+                });
+                
+            } catch (error) {
+                console.error('WebSocket initialization failed:', error);
+                updateWebSocketStatus('Failed', 'error');
+            }
+        }
+
+        // Theme Management
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('crm-theme', newTheme);
+            updateThemeUI(newTheme);
+            
+            showNotification(`Switched to ${newTheme} mode`, 'info');
+        }
+
+        function updateThemeUI(theme) {
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            if (theme === 'dark') {
+                themeIcon.className = 'fas fa-sun';
+                themeText.textContent = 'Light Mode';
+            } else {
+                themeIcon.className = 'fas fa-moon';
+                themeText.textContent = 'Dark Mode';
+            }
+        }
+
+        // Sidebar Management
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        // Mobile Menu Management
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileToggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(event.target) && 
+                !mobileToggle.contains(event.target) && 
+                sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+
+        // Navigation
+        function showSection(sectionName) {
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.add('active');
+            
+            // Update page title and breadcrumb
+            const titles = {
+                dashboard: { title: 'Dashboard', breadcrumb: 'Home / Dashboard' },
+                customers: { title: 'Customer Management', breadcrumb: 'Home / Customers' },
+                orders: { title: 'Order Management', breadcrumb: 'Home / Orders' },
+                users: { title: 'User Management', breadcrumb: 'Home / Users' },
+                logs: { title: 'Live Logs', breadcrumb: 'Home / System / Logs' },
+                settings: { title: 'Settings', breadcrumb: 'Home / System / Settings' }
+            };
+            
+            const pageInfo = titles[sectionName];
+            document.getElementById('page-title').textContent = pageInfo.title;
+            document.getElementById('breadcrumb').textContent = pageInfo.breadcrumb;
+            
+            currentSection = sectionName;
+            
+            // Load section data
+            switch (sectionName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'customers':
+                    loadCustomers();
+                    break;
+                case 'orders':
+                    loadOrders();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'logs':
+                    loadLogs();
+                    break;
+                case 'settings':
+                    checkAPIHealth();
+                    checkTelegramStatus();
+                    break;
+            }
+        }
+
+        // Dashboard Functions
+        async function loadDashboard() {
+            try {
+                showNotification('Loading dashboard...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/dashboard/stats`);
+                const stats = await response.json();
+                
+                renderStats(stats);
+                loadCharts();
+                
+                showNotification('Dashboard updated successfully', 'success');
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                showNotification('Failed to load dashboard', 'error');
+            }
+        }
+
+        function renderStats(stats) {
+            const statsGrid = document.getElementById('stats-grid');
+            statsGrid.innerHTML = `
+                <div class="stat-card fade-in">
+                    <div class="stat-value">${stats.customers?.total || 0}</div>
+                    <div class="stat-label">Total Customers</div>
+                    <div class="stat-change positive">+${stats.customers?.today || 0} today</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-value">${stats.orders?.total || 0}</div>
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-change positive">+${stats.orders?.today || 0} today</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-value">$${(stats.revenue?.total || 0).toLocaleString()}</div>
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-change positive">$${(stats.revenue?.today || 0).toLocaleString()} today</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-value">${stats.users?.total || 0}</div>
+                    <div class="stat-label">Active Users</div>
+                    <div class="stat-change">${stats.subscriptions?.total || 0} subscriptions</div>
+                </div>
+            `;
+        }
+
+        async function loadCharts() {
+            try {
+                const [chartsResponse, activityResponse] = await Promise.all([
+                    fetch(`${API_BASE}/api/dashboard/charts`),
+                    fetch(`${API_BASE}/api/dashboard/activity`)
+                ]);
+                
+                const data = await chartsResponse.json();
+                const activityData = await activityResponse.json();
+                
+                // Orders Over Time Chart - Compact
+                const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+                if (ordersChart) ordersChart.destroy();
+                
+                ordersChart = new Chart(ordersCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.orders_by_day?.map(d => new Date(d.date).toLocaleDateString('en', { weekday: 'short' })) || [],
+                        datasets: [{
+                            label: 'Orders',
+                            data: data.orders_by_day?.map(d => d.count) || [],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    font: {
+                                        size: 10
+                                    }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 10
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Order Status Chart - Compact
+                const statusCtx = document.getElementById('statusChart').getContext('2d');
+                if (statusChart) statusChart.destroy();
+                
+                statusChart = new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.orders_by_status?.map(s => s.status) || [],
+                        datasets: [{
+                            data: data.orders_by_status?.map(s => s.count) || [],
+                            backgroundColor: [
+                                '#f59e0b', // pending
+                                '#2563eb', // processing
+                                '#059669', // completed
+                                '#dc2626'  // cancelled
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: {
+                                        size: 12
+                                    },
+                                    padding: 8
+                                }
+                            },
+                            title: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                
+                // Load Recent Activity
+                if (activityData.recent_orders || activityData.recent_customers) {
+                    loadRecentActivity(activityData);
+                }
+                
+            } catch (error) {
+                console.error('Chart load error:', error);
+            }
+        }
+        
+        function loadRecentActivity(data) {
+            // Load Recent Orders
+            const ordersDiv = document.getElementById('recent-orders');
+            let ordersHtml = '';
+            
+            if (data.recent_orders && data.recent_orders.length > 0) {
+                data.recent_orders.slice(0, 4).forEach(order => {
+                    const statusColor = {
+                        pending: '#f59e0b',
+                        processing: '#2563eb',
+                        completed: '#059669',
+                        cancelled: '#dc2626'
+                    }[order.status] || '#666';
+                    
+                    ordersHtml += `
+                        <div style="font-size: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color); line-height: 1.3;">
+                            <div style="display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.25rem;">
+                                <span style="color: ${statusColor}; font-weight: 500;">●</span>
+                                <span style="font-weight: 500;">${order.product_name || 'N/A'}</span>
+                            </div>
+                            <div style="color: var(--text-muted); font-size: 0.7rem;">
+                                ${order.customer_profiles?.full_name || 'Unknown'}
+                            </div>
+                            <div style="color: var(--text-muted); font-size: 0.65rem;">
+                                ${new Date(order.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                ordersHtml = '<div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.75rem;">No recent orders</div>';
+            }
+            
+            ordersDiv.innerHTML = ordersHtml;
+            
+            // Load New Customers
+            const customersDiv = document.getElementById('new-customers');
+            let customersHtml = '';
+            
+            if (data.recent_customers && data.recent_customers.length > 0) {
+                data.recent_customers.slice(0, 4).forEach(customer => {
+                    customersHtml += `
+                        <div style="font-size: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color); line-height: 1.3;">
+                            <div style="display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.25rem;">
+                                <i class="fas fa-user" style="color: var(--primary-color); font-size: 0.7rem;"></i>
+                                <span style="font-weight: 500;">${customer.full_name || 'N/A'}</span>
+                            </div>
+                            <div style="color: var(--text-muted); font-size: 0.7rem;">
+                                Joined ${new Date(customer.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                customersHtml = '<div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.75rem;">No new customers</div>';
+            }
+            
+            customersDiv.innerHTML = customersHtml;
+        }
+
+        function refreshDashboard() {
+            loadDashboard();
+        }
+
+        // Customer Management
+        async function loadCustomers() {
+            try {
+                const search = document.getElementById('customer-search')?.value || '';
+                const response = await fetch(`${API_BASE}/api/customers?search=${encodeURIComponent(search)}`);
+                const data = await response.json();
+                
+                // Debug: Log the first customer to see what fields are available
+                if (data.customers && data.customers.length > 0) {
+                    console.log('Sample customer data:', data.customers[0]);
+                }
+                
+                renderCustomers(data.customers || []);
+                showNotification(`Loaded ${data.customers?.length || 0} customers`, 'success');
+            } catch (error) {
+                console.error('Customers load error:', error);
+                showNotification('Failed to load customers', 'error');
+            }
+        }
+
+        function renderCustomers(customers) {
+            const tbody = document.getElementById('customers-tbody');
+            tbody.innerHTML = customers.map(customer => {
+                // Split full_name if first_name/last_name are empty
+                const nameParts = (customer.full_name || '').split(' ');
+                const firstName = customer.first_name || nameParts[0] || 'N/A';
+                const lastName = customer.last_name || nameParts[nameParts.length - 1] || 'N/A';
+                const middleName = customer.middle_name || (nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '-');
+                
+                return `
+                <tr class="fade-in">
+                    <td>${firstName}</td>
+                    <td>${middleName}</td>
+                    <td>${lastName}</td>
+                    <td>${customer.phone_number || 'N/A'}</td>
+                    <td>${customer.email || 'N/A'}</td>
+                    <td>${customer.gender || 'N/A'}</td>
+                    <td>${customer.date_of_birth ? new Date(customer.date_of_birth).toLocaleDateString() : 'N/A'}</td>
+                    <td>${customer.address || customer.street_address || 'N/A'}</td>
+                    <td>${customer.city || 'N/A'}</td>
+                    <td>${customer.state || 'N/A'}</td>
+                    <td>${customer.postal_code || 'N/A'}</td>
+                    <td>${customer.country || 'N/A'}</td>
+                    <td>
+                        ${customer.users ? `
+                            <div style="text-align: center;">
+                                <strong>@${customer.users.telegram_username || 'N/A'}</strong>
+                                <br><small>${customer.users.first_name || ''} ${customer.users.last_name || ''}</small>
+                            </div>
+                        ` : '<small style="color: var(--text-muted);">No User</small>'}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-sm btn-outline" onclick="viewCustomer('${customer.id}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${customer.id}', '${customer.full_name}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        async function viewCustomer(customerId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/customers/${customerId}`);
+                const data = await response.json();
+                
+                currentCustomer = data.customer;
+                renderCustomerModal(data.customer);
+                document.getElementById('customer-modal').classList.add('active');
+            } catch (error) {
+                console.error('Customer details error:', error);
+                showNotification('Failed to load customer details', 'error');
+            }
+        }
+
+        function renderCustomerModal(customer) {
+            const modalBody = document.getElementById('customer-modal-body');
+            modalBody.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">🏷️ Full Name</label>
+                        <input type="text" class="form-input" value="${customer.full_name || ''}" id="customer-full-name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">👤 First Name</label>
+                        <input type="text" class="form-input" value="${customer.first_name || ''}" id="customer-first-name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">👤 Middle Name</label>
+                        <input type="text" class="form-input" value="${customer.middle_name || ''}" id="customer-middle-name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">👤 Last Name</label>
+                        <input type="text" class="form-input" value="${customer.last_name || ''}" id="customer-last-name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📧 Email</label>
+                        <input type="email" class="form-input" value="${customer.email || ''}" id="customer-email">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📞 Phone</label>
+                        <input type="text" class="form-input" value="${customer.phone_number || ''}" id="customer-phone">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🎂 Gender</label>
+                        <select class="form-select" id="customer-gender">
+                            <option value="">Not Specified</option>
+                            <option value="Male" ${customer.gender === 'Male' ? 'selected' : ''}>Male</option>
+                            <option value="Female" ${customer.gender === 'Female' ? 'selected' : ''}>Female</option>
+                            <option value="Other" ${customer.gender === 'Other' ? 'selected' : ''}>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📅 Date of Birth</label>
+                        <input type="date" class="form-input" value="${customer.date_of_birth || ''}" id="customer-dob">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📍 Address</label>
+                        <input type="text" class="form-input" value="${customer.address || customer.street_address || ''}" id="customer-address">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🏙️ City</label>
+                        <input type="text" class="form-input" value="${customer.city || ''}" id="customer-city">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🗺️ State</label>
+                        <input type="text" class="form-input" value="${customer.state || ''}" id="customer-state">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📮 Postal Code</label>
+                        <input type="text" class="form-input" value="${customer.postal_code || ''}" id="customer-postal">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🌍 Country</label>
+                        <input type="text" class="form-input" value="${customer.country || ''}" id="customer-country">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">📅 Registered Date</label>
+                        <input type="text" class="form-input" value="${customer.created_at ? new Date(customer.created_at).toLocaleString() : 'N/A'}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🔄 Last Updated</label>
+                        <input type="text" class="form-input" value="${customer.updated_at ? new Date(customer.updated_at).toLocaleString() : 'N/A'}" readonly>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label">👤 Associated Telegram User</label>
+                        <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 0.375rem;">
+                            ${customer.users ? `
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong style="font-size: 1.1rem;">@${customer.users.telegram_username || 'N/A'}</strong><br>
+                                        <small>Name: ${customer.users.first_name || ''} ${customer.users.last_name || ''}</small><br>
+                                        <small>Telegram ID: ${customer.users.telegram_id || 'N/A'}</small><br>
+                                        <small>Token Balance: ${customer.users.token_balance || 0}</small>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <button class="btn btn-sm btn-primary" onclick="openUserInTelegram('${customer.users.telegram_username}')">
+                                            <i class="fab fa-telegram"></i> Open in Telegram
+                                        </button>
+                                    </div>
+                                </div>
+                            ` : '<small style="color: var(--text-muted);">No associated Telegram user</small>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function adjustTokens(userId, operation, amount) {
+            try {
+                const response = await fetch(`${API_BASE}/api/users/${userId}/tokens`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        operation, 
+                        amount,
+                        admin_name: 'CRM Admin' // You can make this dynamic
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('customer-tokens').value = data.newBalance;
+                    const notificationMsg = `Tokens ${operation === 'add' ? 'added' : 'removed'} successfully`;
+                    const fullMsg = data.notificationSent ? 
+                        `${notificationMsg} (Telegram notification sent)` : 
+                        `${notificationMsg} (No Telegram notification - user has no Telegram ID)`;
+                    showNotification(fullMsg, 'success');
+                } else {
+                    showNotification('Failed to adjust tokens', 'error');
+                }
+            } catch (error) {
+                console.error('Token adjustment error:', error);
+                showNotification('Failed to adjust tokens', 'error');
+            }
+        }
+
+        async function deleteCustomer(customerId, customerName) {
+            if (!confirm(`Are you sure you want to delete customer "${customerName}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/customers/${customerId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Customer deleted successfully', 'success');
+                    loadCustomers();
+                } else {
+                    showNotification('Failed to delete customer', 'error');
+                }
+            } catch (error) {
+                console.error('Delete customer error:', error);
+                showNotification('Failed to delete customer', 'error');
+            }
+        }
+
+        function closeCustomerModal() {
+            document.getElementById('customer-modal').classList.remove('active');
+            currentCustomer = null;
+        }
+
+        function openUserInTelegram(username) {
+            if (username) {
+                window.open(`https://t.me/${username}`, '_blank');
+            }
+        }
+
+        async function saveCustomerChanges() {
+            if (!currentCustomer) return;
+            
+            try {
+                const updates = {
+                    first_name: document.getElementById('customer-first-name').value,
+                    middle_name: document.getElementById('customer-middle-name').value,
+                    last_name: document.getElementById('customer-last-name').value,
+                    email: document.getElementById('customer-email').value,
+                    phone_number: document.getElementById('customer-phone').value,
+                    city: document.getElementById('customer-city').value,
+                    state: document.getElementById('customer-state').value,
+                    country: document.getElementById('customer-country').value
+                };
+                
+                const response = await fetch(`${API_BASE}/api/customers/${currentCustomer.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Customer updated successfully', 'success');
+                    closeCustomerModal();
+                    loadCustomers();
+                } else {
+                    showNotification('Failed to update customer', 'error');
+                }
+            } catch (error) {
+                console.error('Save customer error:', error);
+                showNotification('Failed to save changes', 'error');
+            }
+        }
+
+        // Order Management
+        async function loadOrders() {
+            try {
+                const statusFilter = document.getElementById('order-status-filter')?.value || '';
+                const response = await fetch(`${API_BASE}/api/orders?status=${statusFilter}`);
+                const data = await response.json();
+                
+                renderOrders(data.orders || []);
+                showNotification(`Loaded ${data.orders?.length || 0} orders`, 'success');
+            } catch (error) {
+                console.error('Orders load error:', error);
+                showNotification('Failed to load orders', 'error');
+            }
+        }
+
+        function renderOrders(orders) {
+            const tbody = document.getElementById('orders-tbody');
+            tbody.innerHTML = orders.map(order => {
+                const customer = order.customer_profiles;
+                
+                // Split full_name if first_name/last_name are empty
+                const nameParts = (customer?.full_name || '').split(' ');
+                const firstName = customer?.first_name || nameParts[0] || 'N/A';
+                const lastName = customer?.last_name || nameParts[nameParts.length - 1] || 'N/A';
+                const middleName = customer?.middle_name || (nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '-');
+                
+                return `
+                <tr class="fade-in">
+                    <td><strong>#${order.id.slice(0, 8)}</strong></td>
+                    <td>${firstName}</td>
+                    <td>${middleName}</td>
+                    <td>${lastName}</td>
+                    <td>${customer?.phone_number || 'N/A'}</td>
+                    <td>${customer?.email || 'N/A'}</td>
+                    <td>${customer?.address || customer?.street_address || 'N/A'}</td>
+                    <td>${customer?.city || 'N/A'}</td>
+                    <td>${customer?.state || 'N/A'}</td>
+                    <td>
+                        ${customer?.users?.telegram_username ? `
+                            <div style="text-align: center;">
+                                <strong>@${customer.users.telegram_username}</strong>
+                            </div>
+                        ` : '<small style="color: var(--text-muted);">No User</small>'}
+                    </td>
+                    <td>${order.product_name || 'N/A'}</td>
+                    <td>${(order.token_cost || 0).toLocaleString()} tokens</td>
+                    <td>
+                        <span class="status-badge status-${order.status}">
+                            ${order.status}
+                        </span>
+                    </td>
+                    <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-sm btn-outline" onclick="viewOrder('${order.id}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <select class="form-select" style="width: 120px; font-size: 0.75rem;" onchange="updateOrderStatus('${order.id}', this.value)">
+                                <option value="${order.status}" selected>${order.status}</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function viewOrder(orderId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/orders/${orderId}`);
+                const data = await response.json();
+                
+                currentOrder = data.order;
+                renderOrderModal(data.order);
+                document.getElementById('order-modal').classList.add('active');
+            } catch (error) {
+                console.error('Order details error:', error);
+                showNotification('Failed to load order details', 'error');
+            }
+        }
+
+        function renderOrderModal(order) {
+            const customer = order.customer_profiles;
+            const modalBody = document.getElementById('order-modal-body');
+            modalBody.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Order ID</label>
+                        <input type="text" class="form-input" value="${order.id}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="order-status-select">
+                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" class="form-input" value="${order.product_name || ''}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <input type="text" class="form-input" value="$${(order.token_cost || 0).toLocaleString()}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Created Date</label>
+                        <input type="text" class="form-input" value="${new Date(order.created_at).toLocaleString()}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Updated Date</label>
+                        <input type="text" class="form-input" value="${order.updated_at ? new Date(order.updated_at).toLocaleString() : 'N/A'}" readonly>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Customer Information</label>
+                    <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 0.375rem;">
+                        <strong>Name:</strong> ${customer?.first_name || ''} ${customer?.middle_name || ''} ${customer?.last_name || ''}<br>
+                        <strong>Full Name:</strong> ${customer?.full_name || 'N/A'}<br>
+                        <strong>Email:</strong> ${customer?.email || 'N/A'}<br>
+                        <strong>Phone:</strong> ${customer?.phone_number || 'N/A'}<br>
+                        <strong>Location:</strong> ${customer?.city || ''}, ${customer?.state || ''}, ${customer?.country || ''}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Order Notes</label>
+                    <textarea class="form-textarea" id="order-notes" rows="3">${order.notes || ''}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Admin Notes</label>
+                    <textarea class="form-textarea" id="admin-notes" rows="3">${order.admin_notes || ''}</textarea>
+                </div>
+            `;
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const response = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        status: newStatus,
+                        admin_name: 'CRM Admin'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const notificationMsg = 'Order status updated successfully';
+                    const fullMsg = data.notificationSent ? 
+                        `${notificationMsg} 📱 Customer notified` : 
+                        `${notificationMsg} (Customer has no Telegram)`;
+                    showNotification(fullMsg, 'success');
+                    loadOrders();
+                } else {
+                    showNotification('Failed to update order status', 'error');
+                }
+            } catch (error) {
+                console.error('Order status update error:', error);
+                showNotification('Failed to update order status', 'error');
+            }
+        }
+
+        function closeOrderModal() {
+            document.getElementById('order-modal').classList.remove('active');
+            currentOrder = null;
+        }
+
+        async function saveOrderChanges() {
+            if (!currentOrder) return;
+            
+            try {
+                const status = document.getElementById('order-status-select').value;
+                const notes = document.getElementById('order-notes').value;
+                const adminNotes = document.getElementById('admin-notes').value;
+                
+                const response = await fetch(`${API_BASE}/api/orders/${currentOrder.id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        status, 
+                        notes, 
+                        admin_notes: adminNotes,
+                        admin_name: 'CRM Admin'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const notificationMsg = 'Order updated successfully';
+                    const fullMsg = data.notificationSent ? 
+                        `${notificationMsg} 📱 Customer notified` : 
+                        `${notificationMsg}`;
+                    showNotification(fullMsg, 'success');
+                    closeOrderModal();
+                    loadOrders();
+                } else {
+                    showNotification('Failed to update order', 'error');
+                }
+            } catch (error) {
+                console.error('Save order error:', error);
+                showNotification('Failed to save changes', 'error');
+            }
+        }
+
+        // User Management
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/users`);
+                const data = await response.json();
+                
+                renderUsers(data.users || []);
+                showNotification(`Loaded ${data.users?.length || 0} users`, 'success');
+            } catch (error) {
+                console.error('Users load error:', error);
+                showNotification('Failed to load users', 'error');
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('users-tbody');
+            tbody.innerHTML = users.map(user => `
+                <tr class="fade-in">
+                    <td>
+                        <strong>${user.telegram_username || user.id.slice(0, 8)}</strong>
+                    </td>
+                    <td>@${user.telegram_username || 'N/A'}</td>
+                    <td>
+                        <div class="token-controls">
+                            <button class="btn token-btn btn-danger" onclick="adjustUserTokens('${user.id}', 'subtract', 100)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="status-badge" id="user-tokens-${user.id}">${user.token_balance || 0}</span>
+                            <button class="btn token-btn btn-success" onclick="adjustUserTokens('${user.id}', 'add', 100)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge ${user.is_admin ? 'status-completed' : 'status-pending'}">
+                            ${user.is_admin ? 'Admin' : 'User'}
+                        </span>
+                    </td>
+                    <td>${user.last_seen ? new Date(user.last_seen).toLocaleDateString() : 'Never'}</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-sm btn-outline" onclick="toggleAdmin('${user.id}', ${!user.is_admin})" title="Toggle Admin">
+                                <i class="fas fa-user-shield"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function adjustUserTokens(userId, operation, amount) {
+            try {
+                const response = await fetch(`${API_BASE}/api/users/${userId}/tokens`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        operation, 
+                        amount,
+                        admin_name: 'CRM Admin'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById(`user-tokens-${userId}`).textContent = data.newBalance;
+                    const notificationMsg = `Tokens ${operation === 'add' ? 'added' : 'removed'} successfully`;
+                    const fullMsg = data.notificationSent ? 
+                        `${notificationMsg} 📱` : 
+                        `${notificationMsg} (No Telegram)`;
+                    showNotification(fullMsg, 'success');
+                } else {
+                    showNotification('Failed to adjust tokens', 'error');
+                }
+            } catch (error) {
+                console.error('Token adjustment error:', error);
+                showNotification('Failed to adjust tokens', 'error');
+            }
+        }
+
+        async function toggleAdmin(userId, makeAdmin) {
+            try {
+                const response = await fetch(`${API_BASE}/api/users/${userId}/admin`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_admin: makeAdmin })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(`User ${makeAdmin ? 'promoted to' : 'demoted from'} admin`, 'success');
+                    loadUsers();
+                } else {
+                    showNotification('Failed to update admin status', 'error');
+                }
+            } catch (error) {
+                console.error('Admin toggle error:', error);
+                showNotification('Failed to update admin status', 'error');
+            }
+        }
+
+        // Log Management
+        async function loadLogs() {
+            try {
+                const logType = document.getElementById('log-type')?.value || 'combined';
+                const response = await fetch(`${API_BASE}/api/logs?type=${logType}&lines=50`);
+                const data = await response.json();
+                
+                const terminal = document.getElementById('log-terminal');
+                terminal.innerHTML = formatLogs(data.logs || 'No logs available');
+                terminal.scrollTop = terminal.scrollHeight;
+                
+                updateLogStatus('Logs loaded');
+            } catch (error) {
+                console.error('Log load error:', error);
+                showNotification('Failed to load logs', 'error');
+            }
+        }
+
+        function formatLogs(logs) {
+            return logs.split('\n').map(line => {
+                if (!line.trim()) return '';
+                
+                let className = 'log-line';
+                if (line.toLowerCase().includes('error')) className += ' log-level-error';
+                else if (line.toLowerCase().includes('warn')) className += ' log-level-warn';
+                else if (line.toLowerCase().includes('info')) className += ' log-level-info';
+                
+                return `<div class="${className}">${escapeHtml(line)}</div>`;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function startLogStream() {
+            const btn = document.getElementById('log-stream-btn');
+            const logType = document.getElementById('log-type').value;
+            
+            if (logStreamActive) {
+                // Stop stream
+                logStreamActive = false;
+                btn.innerHTML = '<i class="fas fa-play"></i> Start Stream';
+                btn.className = 'btn btn-success';
+                
+                try {
+                    await fetch(`${API_BASE}/api/logs/stream/stop`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: logType })
+                    });
+                } catch (error) {
+                    console.error('Stop stream error:', error);
+                }
+                
+                updateLogStatus('Stream stopped');
+            } else {
+                // Start stream
+                logStreamActive = true;
+                btn.innerHTML = '<i class="fas fa-stop"></i> Stop Stream';
+                btn.className = 'btn btn-danger';
+                
+                try {
+                    await fetch(`${API_BASE}/api/logs/stream/start`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: logType })
+                    });
+                    
+                    updateLogStatus('Stream active');
+                } catch (error) {
+                    console.error('Start stream error:', error);
+                    logStreamActive = false;
+                    btn.innerHTML = '<i class="fas fa-play"></i> Start Stream';
+                    btn.className = 'btn btn-success';
+                }
+            }
+        }
+
+        function appendLogs(lines) {
+            const terminal = document.getElementById('log-terminal');
+            const newLogs = lines.map(line => {
+                let className = 'log-line';
+                if (line.toLowerCase().includes('error')) className += ' log-level-error';
+                else if (line.toLowerCase().includes('warn')) className += ' log-level-warn';
+                else if (line.toLowerCase().includes('info')) className += ' log-level-info';
+                
+                return `<div class="${className}"><span class="log-timestamp">[${new Date().toLocaleTimeString()}]</span> ${escapeHtml(line)}</div>`;
+            }).join('');
+            
+            terminal.innerHTML += newLogs;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('log-terminal').innerHTML = '<div class="log-line">Logs cleared...</div>';
+            updateLogStatus('Logs cleared');
+        }
+
+        function updateLogStatus(message) {
+            document.getElementById('log-status').textContent = message;
+        }
+
+        // System Functions
+        async function checkAPIHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                
+                const statusElement = document.getElementById('api-status');
+                const dbStatusElement = document.getElementById('db-status');
+                
+                if (data.status === 'healthy') {
+                    statusElement.textContent = 'Healthy';
+                    statusElement.className = 'status-badge status-completed';
+                    dbStatusElement.textContent = 'Connected';
+                    dbStatusElement.className = 'status-badge status-completed';
+                } else {
+                    statusElement.textContent = 'Unhealthy';
+                    statusElement.className = 'status-badge status-cancelled';
+                    dbStatusElement.textContent = 'Disconnected';
+                    dbStatusElement.className = 'status-badge status-cancelled';
+                }
+            } catch (error) {
+                console.error('Health check error:', error);
+                const statusElement = document.getElementById('api-status');
+                statusElement.textContent = 'Error';
+                statusElement.className = 'status-badge status-cancelled';
+            }
+        }
+
+        // Telegram Notification Functions
+        async function checkTelegramStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/telegram/status`);
+                const data = await response.json();
+                
+                const statusElement = document.getElementById('telegram-status');
+                
+                if (data.initialized) {
+                    statusElement.textContent = 'Connected';
+                    statusElement.className = 'status-badge status-completed';
+                } else {
+                    statusElement.textContent = 'Disconnected';
+                    statusElement.className = 'status-badge status-cancelled';
+                }
+            } catch (error) {
+                console.error('Telegram status check error:', error);
+                const statusElement = document.getElementById('telegram-status');
+                statusElement.textContent = 'Error';
+                statusElement.className = 'status-badge status-cancelled';
+            }
+        }
+
+        async function testTelegramNotification(testType) {
+            try {
+                // First get a user with telegram_id to test with
+                const usersResponse = await fetch(`${API_BASE}/api/users`);
+                const usersData = await usersResponse.json();
+                
+                const testUser = usersData.users?.find(user => user.telegram_id);
+                
+                if (!testUser) {
+                    showNotification('No users found with Telegram ID for testing', 'error');
+                    return;
+                }
+
+                showNotification(`Sending ${testType} test notification to @${testUser.telegram_username || 'user'}...`, 'info');
+
+                const response = await fetch(`${API_BASE}/api/telegram/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        user_id: testUser.id,
+                        test_type: testType
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`📱 Test notification sent successfully to @${data.telegram_username}`, 'success');
+                } else {
+                    showNotification(`Failed to send test notification: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Test notification error:', error);
+                showNotification('Failed to send test notification', 'error');
+            }
+        }
+
+        function updateWebSocketStatus(status, type) {
+            const element = document.getElementById('ws-status');
+            element.textContent = status;
+            element.className = `status-badge status-${type === 'success' ? 'completed' : 'cancelled'}`;
+        }
+
+        async function exportData() {
+            try {
+                const type = document.getElementById('export-type').value;
+                const response = await fetch(`${API_BASE}/api/export/${type}`);
+                const data = await response.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${type}-export-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification(`${type} data exported successfully`, 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showNotification('Failed to export data', 'error');
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    console.log('🚪 Logging out...');
+                    
+                    // Clear all session data
+                    localStorage.removeItem('crm-session');
+                    localStorage.removeItem('crm-user');
+                    localStorage.removeItem('auth-token');
+                    localStorage.removeItem('crm-auth');
+                    localStorage.removeItem('admin-session');
+                    sessionStorage.clear();
+                    
+                    // Disconnect WebSocket if connected
+                    if (socket && socket.connected) {
+                        console.log('🔌 Disconnecting WebSocket...');
+                        socket.disconnect();
+                    }
+                    
+                    // Clear any cached data
+                    currentSection = 'dashboard';
+                    
+                    // Clear any intervals/timeouts
+                    if (window.statsInterval) {
+                        clearInterval(window.statsInterval);
+                    }
+                    
+                    showNotification('Logging out...', 'info');
+                    
+                    // Redirect to main page
+                    setTimeout(() => {
+                        console.log('🔄 Redirecting to main page...');
+                        window.location.replace('/');
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('❌ Logout error:', error);
+                    showNotification('Logout failed, please try again', 'error');
+                    // Force redirect even if error
+                    setTimeout(() => {
+                        window.location.replace('/');
+                    }, 1000);
+                }
+            }
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; font-size: 1.2rem;">&times;</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        function setupEventListeners() {
+            // Search functionality
+            const customerSearch = document.getElementById('customer-search');
+            if (customerSearch) {
+                customerSearch.addEventListener('input', debounce(loadCustomers, 500));
+            }
+            
+            // Filter functionality
+            const orderStatusFilter = document.getElementById('order-status-filter');
+            if (orderStatusFilter) {
+                orderStatusFilter.addEventListener('change', loadOrders);
+            }
+            
+            // Log type change
+            const logType = document.getElementById('log-type');
+            if (logType) {
+                logType.addEventListener('change', loadLogs);
+            }
+            
+            // Close modals on outside click
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('active');
+                }
+            });
+            
+            // Mobile sidebar toggle
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('nav-item')) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                });
+            }
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Mobile responsiveness
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('mobile-open');
+            }
+        });
+    </script>
+</body>
+</html>

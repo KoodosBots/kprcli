@@ -1,0 +1,32 @@
+services:
+  # Next.js Application
+  - type: web
+    name: kprcli-app
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://app.kprcli.com
+      - key: PORT
+        value: 3000
+      # Add other environment variables from .env.production
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: kprcli-redis
+          property: connectionString
+    domains:
+      - app.kprcli.com
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+  # Redis for token storage
+  - type: redis
+    name: kprcli-redis
+    plan: starter
+    ipAllowList: []  # Allow connections from anywhere (configure in production)
+    maxMemoryPolicy: allkeys-lru
