@@ -838,10 +838,20 @@ export const generateCLIApiKey = async (): Promise<string> => {
 }
 
 export const incrementCLIUserCounter = async (userId: string, counterField: 'total_commands_run' | 'total_successful_auths' | 'total_orders_placed') => {
+  // First get current value
+  const { data: user, error: fetchError } = await supabase
+    .from('cli_users')
+    .select(counterField)
+    .eq('id', userId)
+    .single()
+
+  if (fetchError || !user) return { data: null, error: fetchError }
+
+  // Then update with incremented value
   const { data, error } = await supabase
     .from('cli_users')
     .update({ 
-      [counterField]: supabase.sql`${counterField} + 1`,
+      [counterField]: (user[counterField] || 0) + 1,
       last_active_at: new Date().toISOString()
     })
     .eq('id', userId)
